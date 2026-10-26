@@ -508,60 +508,6 @@ installs. Runtime files are restored from the pinned snapshot; unknown conflicti
 symlinks cause a safe failure. It is not a guarantee of recovery from every kind of
 SD-card/OS damage. Keep an SD backup and do not downgrade by rerunning an old installer.
 
-## Version history
-
-| Version | Status | What is new |
-| --- | --- | --- |
-| **0.10.0-gadget-simulator** | Automated integration checks; full RPi upgrade acceptance pending | Tested simulator, managed examples and same-command release rollback. |
-| **0.9.10-temperature-nan** | Automated checks; Raspberry Pi acceptance pending | Temperature dashboard accepts zero/high readings and rejects NaN/missing values. |
-| **0.9.9-presenter-guide** | Automated checks; Raspberry Pi acceptance pending | Fourteen-step presenter guide with the live temperature dashboard and Local AI conversation finale. |
-| **0.9.8-temperature-time** | Temperature example tested on device; installer acceptance pending | Filters missing/zero/high readings and plots the latest 20 valid temperatures against elapsed seconds. |
-| **0.9.6-dashboard-axes** | Automated tests; Raspberry Pi acceptance pending | Adds graph axis padding/labels, one-based samples, five Y-grid lines, and card height spans. |
-| **0.9.5-dashboard-canvas** | Automated tests; Raspberry Pi acceptance pending | Redraws responsive graph, bar, and pie canvases at native display resolution. |
-| **0.9.4-dashboard-layout** | Automated tests; Raspberry Pi acceptance pending | Adds responsive card widths and a live temperature plus 20-reading history example. |
-| **0.9.3-dashboard-styles** | Automated tests; Raspberry Pi acceptance pending | Adds safe dashboard typography/alignment fields and the counter and LED-matrix temperature examples. |
-| **0.9.2-reliable-upgrades** | Automated tests; Raspberry Pi acceptance pending | Adds package preflight/repair, persistent logs and status tools, synchronized web identity, and the offline CJP firmware guide. |
-| **0.9.1-hotspot-fix** | Regression tested against Raspberry Pi output; hardware retry pending | Accepts Ubuntu 26.04 decimal `iw` frequencies and restores automatic non-DFS 5 GHz hotspot selection. |
-| **0.9.0-ai-network** | Automated tests; Raspberry Pi network migration pending | Adds local-AI voice conversation, adaptive non-DFS 5 GHz hotspot selection, and clone-safe identity. |
-| **0.8.2-stt-preload** | Automated installer/API tests; Raspberry Pi acceptance pending | Adds explicit STT preparation, an IDE-compatible Local AI example, and IPv4 setup downloads. |
-| **0.8.1-local-llm** | Automated installer/API tests passed; Raspberry Pi acceptance pending | Adds explicitly loaded Gemma 3 1B Q4 questions, cleanup, docs, and the initial example. |
-| **0.7.11-cjp-migration-repair** | Automated migration and serial tests passed; Pi retry pending | Repairs upgrades from 0.7.9 and failed 0.7.10 while retaining adaptive CJP detection. |
-| **0.7.10-adaptive-cjp-detection** | Automated serial tests passed; slower-hardware Pi retest pending | Removes the fixed startup sleep and polls CJP for up to five seconds while returning immediately on fast devices. |
-| **0.7.9-voice-conversation** | Local validation passed; Pi conversation retest pending | Adds answer generation, wake/sleep conversation sessions, expressive gadget feedback, and offline agent knowledge. |
-| **0.7.8-gadget-alarm-examples** | Local validation pending | Adds the tested temperature alarm/inhibit example and high-note CodyJoy Pro hardware test. |
-| **0.7.7-presenter-ai-examples** | Local validation pending | Adds tested camera sounds, object detection, voice-controlled LEDs, and the managed Step 7 temperature/color example. |
-| **0.7.6-camera-presenter-step** | Local validation pending | Adds a beginner camera-capture Step 9 and IDE image-preview instructions to the presenter guide. |
-| **0.7.5-checksum-repair** | Local validation complete; Raspberry Pi retry pending | Repairs the 0.7.4 CRLF checksum mismatch and seals checksums from Git-normalized text. |
-| **0.7.3-usb-serial-detection** | Local validation passed; modified CodyPi firmware acceptance pending | Probes USB serial devices only, uses a fixed two-second post-open wait, validates the exact CodyJoy Pro identity, and deliberately defers caching, retries, and multi-device selection. Requires the CodyPi test firmware without its blocking setup delay. |
-| **0.7.4-gadget-tests** | Local validation complete; Raspberry Pi hardware acceptance pending | Adds public managed gadget tests, copy controls, presenter-guide corrections, quieter seven-segment output, and a tested 5 ms RGB settling interval. |
-| **0.7.2-teacher-guides** | Local validation passed; Pi acceptance pending | Adds the protected offline teacher portal, first progressive presenter guide, password-change command, current homepage version/date, and normal-user `codynick-version` repair. |
-| **0.7.1-api-reference** | Pi upgrade passed | Adds complete local Dashboard, IoT/cloud, and installed AI API references. |
-| **0.7.0-offline-docs-camera** | Pi upgrade passed | Adds the offline guide and local assets, automatic one-shot camera release, and graceful script cleanup. |
-| **0.6.1-tts-permissions** | Local validation passed; Pi repair test pending | Repairs ownership of the managed TTS environment and model cache after restore, allowing Coqui to update its vocoder configuration as `client`. Reuses the verified 0.6.0 assets. |
-| **0.6.0-tts** | Local validation passed; Pi TTS/audio hardware test pending | Adds offline English Glow-TTS, persistent named WAV files, cached playback conversion, and separate generate-once/replay examples. Existing audio and student files are preserved. |
-| **0.5.3-examples-polish** | Local validation passed; Pi hardware retest pending | Replaces the system-owned examples folder on every setup run; uses stable image names; adds adjustable OCR confidence, tolerant `codynick` matching, five-second LED results, and the `codynick-version` audit command. |
-| **0.5.2-camera-sounds** | Local validation passed; Pi audio hardware test pending | All five bundled camera-capture examples play a CodyJoy countdown/cue and USB-speaker shutter sound, with a CodyJoy buzzer fallback. Existing AI assets and student data are preserved. |
-| **0.5.1-ocr-led** | Local validation passed; Pi hardware test pending | Adds a one-shot joystick-UP camera OCR demo that turns all RGB LEDs green when normalized text contains `codynick`, otherwise red. Reuses 0.5.0 OCR assets. |
-| **0.5.0-ocr** | Local validation passed; Pi OCR hardware test pending | Offline English fast/standard/best OCR, USB-camera text demo with confidence/JSON/annotation output, explicit PHP-first Apache homepage, interrupted-download retries, and setup-lock release before live log following. Application data and examples remain preserved. |
-| **0.4.1-setup** | Clean-install retest pending | The second run recognizes the saved pending/applying network stage and opens confirmation without relying on SSH environment variables. Application payload remains 0.4.0. |
-| **0.4.0-speech** | Voice LED hardware test passed on user's Pi | Offline English speech-to-text, constrained voice commands, microphone-to-RGB demo, and the camera/counting/model-comparison demos prepared in the unpublished 0.3.1 candidate. Reuses verified 0.3.0 vision assets. |
-| 0.3.1-vision | Unpublished candidate, folded into 0.4.0 | Renamed camera demo, per-photo object counting, and sequential nano/small/medium comparison on one photo. |
-| 0.3.0-vision | USB capture and default-model object detection passed on user's Pi | Single setup entry point, in-place upgrades from core 0.2.x, bundled ARM64 controller/YOLO runtime and models, USB-camera IDE example, safe ANSI terminal colors, bounded output, and log-rotation handling. OCR/speech/chapter 8 remain deferred. |
-| 0.2.2-core | Fresh-OS, IDE/run/live-output, and RGB hardware tests passed on user's Pi | Replaced the failing external test -w gate with actual file/folder operations. Baseline for 0.3.0 upgrade. |
-| 0.2.1-core | Superseded: test -w still failed on Pi | Added explicit ACLs and diagnostics. The log confirmed correct file modes, ACLs, and group membership, but the preliminary test prevented the real-open probe from running. |
-| 0.2.0-core | Superseded: Pi health check failed on www-data write access | Introduced detached core installation, IDE/live terminal, Blockly, dashboard, dependencies, and script/watchdog services. Python/database checks passed on the Pi, but READY was not reached. |
-| **0.2.0** | Automated migration/channel tests; Pi acceptance pending | Selects a permitted non-DFS 5 GHz channel at boot and repairs identity after image cloning. |
-| **0.1.2** | Superseded after fresh-install and reboot tests | Corrects inherited file-creation permissions so networkd can read generated Netplan files. |
-| 0.1.1 | Superseded; do not install | Reuses a correct working dongle profile, targets USB preparation instead of global Netplan application, arms rollback earlier, and retries recovery. Fresh-install testing subsequently found the permissions defect fixed in 0.1.2. |
-| 0.1.0 | Superseded; do not install | Introduced adapter detection, internet checks, hotspot handover, confirmation, rollback, and version/state reporting. Global Netplan application could disconnect SSH during preparation. |
-
-The unified 0.10.0 setup updates both the core application and network component.
-See [CHANGELOG.md](CHANGELOG.md) for technical details.
-
-**For every future published version**, update this table, current-version section,
-download URL, prerequisites, tested scope, and changelog. Explain what changed and
-any required user action. Keep published tags unchanged; fixes receive new versions.
-
 ## Recovery
 
 Recover interrupted old attempts before installing again. Do not delete the setup lock
@@ -657,3 +603,57 @@ bash -n bootstrap/codynick-setup.sh
 Tests cover configuration preservation, interface detection, channel scoring and
 fallback, clone identity, HTTPS binding, confirmation, rollback, and subprocess
 permissions. Hardware acceptance remains required on the target Pi and client devices.
+
+## Version history
+
+| Version | Status | What is new |
+| --- | --- | --- |
+| **0.10.0-gadget-simulator** | Automated integration checks; full RPi upgrade acceptance pending | Tested simulator, managed examples and same-command release rollback. |
+| **0.9.10-temperature-nan** | Automated checks; Raspberry Pi acceptance pending | Temperature dashboard accepts zero/high readings and rejects NaN/missing values. |
+| **0.9.9-presenter-guide** | Automated checks; Raspberry Pi acceptance pending | Fourteen-step presenter guide with the live temperature dashboard and Local AI conversation finale. |
+| **0.9.8-temperature-time** | Temperature example tested on device; installer acceptance pending | Filters missing/zero/high readings and plots the latest 20 valid temperatures against elapsed seconds. |
+| **0.9.6-dashboard-axes** | Automated tests; Raspberry Pi acceptance pending | Adds graph axis padding/labels, one-based samples, five Y-grid lines, and card height spans. |
+| **0.9.5-dashboard-canvas** | Automated tests; Raspberry Pi acceptance pending | Redraws responsive graph, bar, and pie canvases at native display resolution. |
+| **0.9.4-dashboard-layout** | Automated tests; Raspberry Pi acceptance pending | Adds responsive card widths and a live temperature plus 20-reading history example. |
+| **0.9.3-dashboard-styles** | Automated tests; Raspberry Pi acceptance pending | Adds safe dashboard typography/alignment fields and the counter and LED-matrix temperature examples. |
+| **0.9.2-reliable-upgrades** | Automated tests; Raspberry Pi acceptance pending | Adds package preflight/repair, persistent logs and status tools, synchronized web identity, and the offline CJP firmware guide. |
+| **0.9.1-hotspot-fix** | Regression tested against Raspberry Pi output; hardware retry pending | Accepts Ubuntu 26.04 decimal `iw` frequencies and restores automatic non-DFS 5 GHz hotspot selection. |
+| **0.9.0-ai-network** | Automated tests; Raspberry Pi network migration pending | Adds local-AI voice conversation, adaptive non-DFS 5 GHz hotspot selection, and clone-safe identity. |
+| **0.8.2-stt-preload** | Automated installer/API tests; Raspberry Pi acceptance pending | Adds explicit STT preparation, an IDE-compatible Local AI example, and IPv4 setup downloads. |
+| **0.8.1-local-llm** | Automated installer/API tests passed; Raspberry Pi acceptance pending | Adds explicitly loaded Gemma 3 1B Q4 questions, cleanup, docs, and the initial example. |
+| **0.7.11-cjp-migration-repair** | Automated migration and serial tests passed; Pi retry pending | Repairs upgrades from 0.7.9 and failed 0.7.10 while retaining adaptive CJP detection. |
+| **0.7.10-adaptive-cjp-detection** | Automated serial tests passed; slower-hardware Pi retest pending | Removes the fixed startup sleep and polls CJP for up to five seconds while returning immediately on fast devices. |
+| **0.7.9-voice-conversation** | Local validation passed; Pi conversation retest pending | Adds answer generation, wake/sleep conversation sessions, expressive gadget feedback, and offline agent knowledge. |
+| **0.7.8-gadget-alarm-examples** | Local validation pending | Adds the tested temperature alarm/inhibit example and high-note CodyJoy Pro hardware test. |
+| **0.7.7-presenter-ai-examples** | Local validation pending | Adds tested camera sounds, object detection, voice-controlled LEDs, and the managed Step 7 temperature/color example. |
+| **0.7.6-camera-presenter-step** | Local validation pending | Adds a beginner camera-capture Step 9 and IDE image-preview instructions to the presenter guide. |
+| **0.7.5-checksum-repair** | Local validation complete; Raspberry Pi retry pending | Repairs the 0.7.4 CRLF checksum mismatch and seals checksums from Git-normalized text. |
+| **0.7.3-usb-serial-detection** | Local validation passed; modified CodyPi firmware acceptance pending | Probes USB serial devices only, uses a fixed two-second post-open wait, validates the exact CodyJoy Pro identity, and deliberately defers caching, retries, and multi-device selection. Requires the CodyPi test firmware without its blocking setup delay. |
+| **0.7.4-gadget-tests** | Local validation complete; Raspberry Pi hardware acceptance pending | Adds public managed gadget tests, copy controls, presenter-guide corrections, quieter seven-segment output, and a tested 5 ms RGB settling interval. |
+| **0.7.2-teacher-guides** | Local validation passed; Pi acceptance pending | Adds the protected offline teacher portal, first progressive presenter guide, password-change command, current homepage version/date, and normal-user `codynick-version` repair. |
+| **0.7.1-api-reference** | Pi upgrade passed | Adds complete local Dashboard, IoT/cloud, and installed AI API references. |
+| **0.7.0-offline-docs-camera** | Pi upgrade passed | Adds the offline guide and local assets, automatic one-shot camera release, and graceful script cleanup. |
+| **0.6.1-tts-permissions** | Local validation passed; Pi repair test pending | Repairs ownership of the managed TTS environment and model cache after restore, allowing Coqui to update its vocoder configuration as `client`. Reuses the verified 0.6.0 assets. |
+| **0.6.0-tts** | Local validation passed; Pi TTS/audio hardware test pending | Adds offline English Glow-TTS, persistent named WAV files, cached playback conversion, and separate generate-once/replay examples. Existing audio and student files are preserved. |
+| **0.5.3-examples-polish** | Local validation passed; Pi hardware retest pending | Replaces the system-owned examples folder on every setup run; uses stable image names; adds adjustable OCR confidence, tolerant `codynick` matching, five-second LED results, and the `codynick-version` audit command. |
+| **0.5.2-camera-sounds** | Local validation passed; Pi audio hardware test pending | All five bundled camera-capture examples play a CodyJoy countdown/cue and USB-speaker shutter sound, with a CodyJoy buzzer fallback. Existing AI assets and student data are preserved. |
+| **0.5.1-ocr-led** | Local validation passed; Pi hardware test pending | Adds a one-shot joystick-UP camera OCR demo that turns all RGB LEDs green when normalized text contains `codynick`, otherwise red. Reuses 0.5.0 OCR assets. |
+| **0.5.0-ocr** | Local validation passed; Pi OCR hardware test pending | Offline English fast/standard/best OCR, USB-camera text demo with confidence/JSON/annotation output, explicit PHP-first Apache homepage, interrupted-download retries, and setup-lock release before live log following. Application data and examples remain preserved. |
+| **0.4.1-setup** | Clean-install retest pending | The second run recognizes the saved pending/applying network stage and opens confirmation without relying on SSH environment variables. Application payload remains 0.4.0. |
+| **0.4.0-speech** | Voice LED hardware test passed on user's Pi | Offline English speech-to-text, constrained voice commands, microphone-to-RGB demo, and the camera/counting/model-comparison demos prepared in the unpublished 0.3.1 candidate. Reuses verified 0.3.0 vision assets. |
+| 0.3.1-vision | Unpublished candidate, folded into 0.4.0 | Renamed camera demo, per-photo object counting, and sequential nano/small/medium comparison on one photo. |
+| 0.3.0-vision | USB capture and default-model object detection passed on user's Pi | Single setup entry point, in-place upgrades from core 0.2.x, bundled ARM64 controller/YOLO runtime and models, USB-camera IDE example, safe ANSI terminal colors, bounded output, and log-rotation handling. OCR/speech/chapter 8 remain deferred. |
+| 0.2.2-core | Fresh-OS, IDE/run/live-output, and RGB hardware tests passed on user's Pi | Replaced the failing external test -w gate with actual file/folder operations. Baseline for 0.3.0 upgrade. |
+| 0.2.1-core | Superseded: test -w still failed on Pi | Added explicit ACLs and diagnostics. The log confirmed correct file modes, ACLs, and group membership, but the preliminary test prevented the real-open probe from running. |
+| 0.2.0-core | Superseded: Pi health check failed on www-data write access | Introduced detached core installation, IDE/live terminal, Blockly, dashboard, dependencies, and script/watchdog services. Python/database checks passed on the Pi, but READY was not reached. |
+| **0.2.0** | Automated migration/channel tests; Pi acceptance pending | Selects a permitted non-DFS 5 GHz channel at boot and repairs identity after image cloning. |
+| **0.1.2** | Superseded after fresh-install and reboot tests | Corrects inherited file-creation permissions so networkd can read generated Netplan files. |
+| 0.1.1 | Superseded; do not install | Reuses a correct working dongle profile, targets USB preparation instead of global Netplan application, arms rollback earlier, and retries recovery. Fresh-install testing subsequently found the permissions defect fixed in 0.1.2. |
+| 0.1.0 | Superseded; do not install | Introduced adapter detection, internet checks, hotspot handover, confirmation, rollback, and version/state reporting. Global Netplan application could disconnect SSH during preparation. |
+
+The unified 0.10.0 setup updates both the core application and network component.
+See [CHANGELOG.md](CHANGELOG.md) for technical details.
+
+**For every future published version**, update this table, current-version section,
+download URL, prerequisites, tested scope, and changelog. Explain what changed and
+any required user action. Keep published tags unchanged; fixes receive new versions.
