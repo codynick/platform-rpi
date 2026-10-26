@@ -1,214 +1,5 @@
 # CodyNick Raspberry Pi installation
 
-## Current version
-
-**Unified setup: 0.11.1; application: 0.11.1; network component: 0.2.2.**
-
-## 0.11.1: Repository Migration
-
-The repository is now `codynick/platform-rpi`. Installer source and release-asset URLs use the transferred repository. Success ends with **`CodyNick 0.11.1: READY`**. Published older tags and rollback payloads are unchanged. No gadget, AI-model, or network behavior changes.
-
-## 0.11.0: Integrated Sprite Stage and Named Designs
-
-Use the same fixed setup command. Success ends with **`CodyNick 0.11.0: READY`**.
-Open Block Coding and refresh with Ctrl+F5. General contains Events, Operators,
-Control, Text, Timer and Variables. Sprites contains Motion, Looks and Sensing;
-Hardware contains gadget blocks. All tabs share one program and workspace.
-
-The collapsible stage supports one rocket, movement/direction/size, glide, edge
-bounce, speech, keyboard and mouse input. Sprite-only programs do not open CJP.
-Gadget blocks still connect to real hardware. Click the stage to focus keyboard input.
-The stage service runs unprivileged on loopback; no new packages or models are needed.
-
-Enter a Design Name and use Save/Load for designs stored on this Pi. Overwriting,
-deletion and replacing unsaved work require confirmation. Loading never runs code;
-deleting a saved design leaves the open workspace and running script unchanged.
-Upload/Download use `.codynick`; downloaded files use the entered name. Recovery
-autosave remains separate. Existing local-prototype designs and workspaces are retained.
-The demo is available at `/blocks/examples/sprite_demo.codynick` and under CodyNick
-examples/blockly. The offline guide is in Start Here / Blockly Sprite Stage and Designs.
-
-Original 0.10.3 remains selectable using `python tools/select_release.py 0.10.3`
-followed by committing/pushing the selector. Users rerun the same fixed command.
-Downgrade stops the sprite service but retains named designs. Older Blockly cannot
-edit sprite/Timer workspaces; the current workspace is copied into the install backup
-under `var/www/html/blocks/data/main.json`. Download important projects before downgrading.
-Remote-server UI and Windows/Ubuntu laptop runtimes are not included.
-
-## 0.10.3: Start/Stop and Platform Polish
-
-Use the same fixed setup command. Success ends with **`CodyNick 0.10.3: READY`**.
-IDE and Blockly now have Stop. Run explicitly restarts the student script even if
-unchanged; Save after Stop does not resume it. A restricted Unix socket handles only
-Start/Stop outside Apache's unchanged sandbox; the old local-test sudo rule is removed.
-The watchdog remains running. Camera/microphone child processes receive the existing
-graceful stop, with forced cleanup after the existing 10-second timeout if needed.
-Physical LEDs can retain their last state. Simulator editing unlocks after its lease expires.
-
-Both Events blocks have curved hats. All tools have graphical Main Panel buttons and
-the supplied CodyNick favicon. Refresh with Ctrl+F5; reopen tabs if the browser retains
-an old favicon. The main panel shows CJP firmware and last-detected UTC time after a
-physical script handshake. Old firmware without a version shows Unknown; before the
-first detection it shows Not detected yet. This is historical status, not a live probe.
-
-Original 0.10.2 remains selectable for rollback via `python tools/select_release.py 0.10.2`
-and committing/pushing the selector. Pi users keep the same fixed command.
-
-## 0.10.2: Tool Navigation and Soil Moisture
-
-Use the same fixed setup command. Success ends with **`CodyNick 0.10.2: READY`**.
-All tools have Main Panel navigation. The simulator retains your browser hostname
-(for example `http://start.codynick:8091/`) instead of redirecting to a numeric IP.
-Accessing the panel by IP still retains that IP. Simulated soil moisture is 0 to
-100 percent, default 50. Old scene layouts are retained; old readings above 100
-are clamped to 100. Refresh tool pages with Ctrl+F5 after upgrading.
-Hardware drivers, AI models, and network behavior are unchanged. Maintainers can
-select original 0.10.1 with `python tools/select_release.py 0.10.1`, commit and
-push the selector, and users rerun the same fixed command to downgrade.
-
-## 0.10.1: Blockly Control and Operators
-
-Use the same fixed setup command. Success ends with **`CodyNick 0.10.1: READY`**.
-Open Block Coding from the main-menu card or `/blocks/`. Control includes wait seconds,
-if/then, if/then/else, while, repeat-until, forever, and repeat N times. Operators
-contains arithmetic, comparisons, and boolean operations. Control blocks are orange;
-Operators are green. Existing saved workspaces are retained. Refresh with Ctrl+F5
-after upgrading if an old page remains cached.
-
-No hardware drivers, AI models, or network behavior changed. Original 0.10.0 is
-available for rollback using `python tools/select_release.py 0.10.0` followed by
-committing and pushing the selector; Pi users rerun the same fixed command.
-
-## 0.10.0: Gadget Simulator
-
-Use the same fixed install/repair/upgrade command. Success ends with **`CodyNick 0.10.0: READY`**. No PC version is included; Ubuntu 26.04 ARM64 on Raspberry Pi remains required.
-
-Open **Gadget Simulator** in the main panel, or `http://10.42.0.1/simulator/`. It includes the tested drag-and-drop stage, saved layouts, CJP, Stand-Alone joystick, temperature, ultrasonic, soil moisture, seven-segment, scrolling/pixel LED matrix and an offline Wi-Fi/IoT model. Existing prototype layouts and tokens are retained. Browser audio requires clicking Enable sound.
-
-Examples are under **CodyNick examples/simulator**. Add their required gadgets before running them. The on-device documentation has a Gadget Simulator reference under Start Here. No physical hardware is used by `CodyNick.Simulator()`; hardware programs keep `CodyNick.CN()` unchanged.
-
-To change the stage's hardware set while a program is running, stop it in SSH with `sudo systemctl stop script.service`. Add/remove gadgets, then choose Run This File again. A dedicated Stop button is not included in this release.
-
-### Easy Downgrade With the Same User Command
-
-The updater engine is now separate from its selected application target. If this release has a problem, the maintainer can point GitHub back to the **original immutable** 0.9.10, 0.9.9 or 0.9.8 release. You then run the SAME fixed setup command. No special rollback command, SD rewrite or renamed/re-created old release is needed on the Pi.
-
-The selected older release's original manifest and checksums determine the deployed application files and displayed version. The current compatible updater handles the migration. The simulator service is disabled on an older release and simulator-only web pages are archived; its layout/token are retained for reuse. Student files, database, Wi-Fi configuration and existing credentials are preserved. System-owned examples are replaced as usual and backed up first.
-
-This is an **application rollback**, not an Ubuntu package, AI runtime, firmware or database snapshot rollback. Backups are stored under `/var/backups/codynick/core-*`. Verify `codynick-version` shows the selected version and `Stage: ready` afterward.
-
-Maintainer workflow (not commands for the Pi user):
-
-```bash
-python tools/select_release.py 0.9.10
-git diff -- setup.sh
-git add setup.sh
-git commit -m "Select original CodyNick 0.9.10 for rollback"
-git push origin HEAD:main
-```
-
-Select 0.9.9 or 0.9.8 the same way; select 0.10.0 to move forward again. This changes only the active target and its immutable tag/checksum; it does not rewrite Git history or move published tags. Do not revert the entire updater to an older incompatible script: retain the current stable engine and roll back the target selector instead. Do not run `seal_core_release.py` after selecting a rollback target, because that build tool selects the new release again.
-
-Version 0.9.10 removes the zero/below-120 restriction from the temperature dashboard example and skips NaN and missing readings instead. Use the same setup command to upgrade from 0.9.9.
-Targets Ubuntu Server 26.04 ARM64 on Raspberry Pi 5. Network setup and core 0.2.2
-have passed fresh-OS testing, IDE/run/live-output tests, and a CodyJoy RGB hardware
-test. Version 0.3.0 adds USB-camera/object detection and colored terminal output;
-USB-camera capture and default-model object detection passed the user's Pi test.
-Version 0.4.0 adds the vision demos prepared for 0.3.1 plus offline English
-speech-to-text and a microphone-to-RGB voice-command demo; both camera detection and
-the voice LED demo passed the user's Pi tests.
-Version 0.4.1 fixes same-command confirmation after hotspot handover when sudo
-does not retain the SSH connection environment. Version 0.5.0 adds offline English
-camera OCR, corrects the `start.codynick` homepage, retries interrupted source/OCR
-downloads, and releases the setup lock before following the live log.
-Version 0.5.1 adds a joystick-triggered OCR-to-RGB beginner demo. Version 0.5.2
-adds the established CodyJoy countdown/cue and USB-speaker shutter sound to every
-bundled camera-capture example, with a CodyJoy buzzer fallback for shutter playback.
-Version 0.5.3 replaces the complete system-owned examples folder on every setup run,
-uses stable camera filenames, adds adjustable OCR sensitivity and tolerant text
-matching, keeps OCR result LEDs on for five seconds, and adds `codynick-version`.
-Version 0.6.0 adds offline English text-to-speech, persistent named WAV files, and
-separate beginner examples for generating speech once and replaying it later without
-loading the TTS model again.
-Version 0.6.1 repairs ownership of the restored TTS environment and models so Coqui
-can update its cached configuration while running as the `client` account.
-Version 0.7.0 replaces the placeholder on-device documentation with an offline guide
-to the installed IDE, gadgets, dashboard, media, and AI features. It bundles gadget
-images and Blockly locally. One-shot captures now release the USB camera immediately,
-multi-photo demos opt in explicitly, and service restarts request graceful cleanup.
-Version 0.7.1 expands that guide into a programmer's reference for the local Dashboard,
-CodyNick controller Wi-Fi/cloud API, and every public CodyNick AI operation, including
-signatures, parameters, return structures, examples, errors, and lifecycle rules.
-Version 0.7.2 adds a password-protected offline teacher portal and its first progressive
-live-coding guide. It also repairs normal-user version reporting and makes the main
-panel's software version and release date update with every release.
-Version 0.7.3 restricts CodyJoy Pro discovery to USB serial devices, removes redundant
-pre-scan/open delays, waits a tested fixed two seconds after opening, and requires the
-exact CodyJoy Pro identity. It does not cache ports, retry identification, or offer
-multi-device selection yet.
-Version 0.7.4 adds public, copyable test pages for eleven gadget groups, keeps their
-Markdown sources in a separately managed on-device folder, revises the temperature
-presenter guide, removes seven-segment debug noise, and improves multi-LED reliability.
-Version 0.7.5 repairs the 0.7.4 Windows line-ending checksum defect and makes release
-sealing checksum Git-normalized text, while preserving the same user-facing features.
-Version 0.7.6 adds the first AI transition to the presenter guide: connect a USB camera,
-capture one reusable image, and preview it from the IDE.
-Version 0.7.7 completes the first presenter path with camera sounds, object detection,
-voice-controlled LEDs, and a managed temperature/color display example.
-Version 0.7.8 adds the tested temperature alarm/inhibit behavior and a managed
-CodyJoy Pro joystick, LED-region, and high-note hardware test.
-Version 0.8.1 adds a pinned local Gemma 3 1B Q4 model, explicit model loading,
-short-question generation and cleanup controls. Version 0.8.2 adds `load_stt()`,
-updates the voice examples and references, makes the Local AI example compatible with
-the IDE, and prefers IPv4 for setup downloads.
-Version 0.9.0 adds the tested local-AI voice conversation and migrates the hotspot to
-boot-time selection among non-DFS 5 GHz channels. Cloned images receive a unique
-hardware-derived identity and hotspot name.
-Version 0.9.1 fixes hotspot startup on Ubuntu 26.04, whose `iw` output reports
-5 GHz frequencies with a decimal suffix such as `5180.0 MHz`.
-Version 0.9.2 disables automatic Ubuntu package updates, repairs interrupted or
-corrupted package-manager prerequisites, adds persistent installation logs and
-status commands, synchronizes hotspot identity with the web panel, and installs
-the offline CodyJoy Pro HEX-programming guide.
-Version 0.9.9 expands the teacher presenter guide with a live dashboard reveal and a Local AI conversation finale. Version 0.9.8 adds the tested temperature dashboard example with missing-reading handling, a non-zero/below-120 filter, and elapsed seconds on the graph. Version 0.9.6 added configurable graph axes, five-line grids, one-based samples, and card height spans. Version 0.9.5 redraws charts at their real responsive size for sharp, undistorted output. Version 0.9.4 added responsive dashboard card widths and a live temperature-history example. Version 0.9.3 added safe per-widget dashboard typography and alignment controls,
-plus simple dashboard-counter and LED-matrix temperature demonstrations.
-Version 0.7.11 repaired the upgrade gate for devices coming from 0.7.9 or the failed
-0.7.10 attempt. Version 0.7.10 replaced the fixed controller startup delay with adaptive polling: fast
-units connect immediately, while slower CodyJoy Pro units have up to five seconds to
-identify. Version 0.7.9 added a wake-phrase conversation demo, overwrite-safe prerecorded answer
-generation, multi-question sessions, sleep commands, expressive gadget feedback, and
-an offline compact platform knowledge base for AI coding agents.
-
-The matching CodyPi firmware source is `firmware/CodyPi/CodyPi.ino`, version 1.19.4.
-Its former blocking `delay(2000)` remains disabled while joystick initialization and
-calibration remain enabled. The Raspberry Pi setup command does not flash CodyPi;
-install this firmware separately before testing the shortened host delay.
-
-**Use this same command for first installation, a supported upgrade, or application
-repair. Already on the verified hotspot? Run it now without rewriting the SD card:**
-
-```bash
-wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
-```
-
-It chooses the required stage and shows the installation log. It accepts core
-0.2.0, 0.2.1, 0.2.2, 0.3.0, the unpublished 0.3.1 candidate, 0.4.0, 0.5.0,
-0.5.1, 0.5.2, 0.5.3, 0.6.0, 0.6.1, 0.7.0, 0.7.1, 0.7.2, 0.7.3, 0.7.4, 0.7.5, 0.7.6, 0.7.7, 0.7.8, 0.7.9, failed 0.7.10, 0.7.11, 0.8.1, 0.8.2, 0.9.0, 0.9.1, 0.9.2, 0.9.3, 0.9.4, 0.9.5, 0.9.6, 0.9.7, 0.9.8, and repeats of 0.9.9. Upstream stage scripts/assets are pinned
-to immutable versions with SHA256 checks. Only the small entry point follows main;
-the application and network stages use fixed release tags.
-
-On a fresh OS, the network switch still disconnects SSH. Join the displayed Pi
-hotspot, reconnect at 10.42.0.1, and run **the same command** within 15 minutes.
-It performs the network confirmation and continues to applications. No separate
-`--confirm` command is required with this entry point. Answer its confirmation prompt.
-
-Have the USB webcam and a USB microphone (a webcam microphone is acceptable)
-connected. Version 0.6.0 adds approximately **964 MB** of TTS downloads. A fresh
-installation downloads about **1.4 GB** across all application assets. Allow at least
-6 GB free storage. Downloads are cached and verified; repair restores managed runtime
-files. Face features and chapter 8 are not installed yet. TTS hardware acceptance is
-pending, so this remains a staged hardware trial, not a production fleet updater.
-
 ## 1. Prepare before installation
 
 Before powering on the Pi for setup, prepare an external router or phone hotspot:
@@ -604,7 +395,218 @@ Tests cover configuration preservation, interface detection, channel scoring and
 fallback, clone identity, HTTPS binding, confirmation, rollback, and subprocess
 permissions. Hardware acceptance remains required on the target Pi and client devices.
 
-## Version history
+## Revision History
+
+## Current version
+
+**Unified setup: 0.11.1; application: 0.11.1; network component: 0.2.2.**
+
+## 0.11.1: Repository Migration
+
+The repository is now `codynick/platform-rpi`. Installer source and release-asset URLs use the transferred repository. Success ends with **`CodyNick 0.11.1: READY`**. Published older tags and rollback payloads are unchanged. No gadget, AI-model, or network behavior changes.
+
+## 0.11.0: Integrated Sprite Stage and Named Designs
+
+Use the same fixed setup command. Success ends with **`CodyNick 0.11.0: READY`**.
+Open Block Coding and refresh with Ctrl+F5. General contains Events, Operators,
+Control, Text, Timer and Variables. Sprites contains Motion, Looks and Sensing;
+Hardware contains gadget blocks. All tabs share one program and workspace.
+
+The collapsible stage supports one rocket, movement/direction/size, glide, edge
+bounce, speech, keyboard and mouse input. Sprite-only programs do not open CJP.
+Gadget blocks still connect to real hardware. Click the stage to focus keyboard input.
+The stage service runs unprivileged on loopback; no new packages or models are needed.
+
+Enter a Design Name and use Save/Load for designs stored on this Pi. Overwriting,
+deletion and replacing unsaved work require confirmation. Loading never runs code;
+deleting a saved design leaves the open workspace and running script unchanged.
+Upload/Download use `.codynick`; downloaded files use the entered name. Recovery
+autosave remains separate. Existing local-prototype designs and workspaces are retained.
+The demo is available at `/blocks/examples/sprite_demo.codynick` and under CodyNick
+examples/blockly. The offline guide is in Start Here / Blockly Sprite Stage and Designs.
+
+Original 0.10.3 remains selectable using `python tools/select_release.py 0.10.3`
+followed by committing/pushing the selector. Users rerun the same fixed command.
+Downgrade stops the sprite service but retains named designs. Older Blockly cannot
+edit sprite/Timer workspaces; the current workspace is copied into the install backup
+under `var/www/html/blocks/data/main.json`. Download important projects before downgrading.
+Remote-server UI and Windows/Ubuntu laptop runtimes are not included.
+
+## 0.10.3: Start/Stop and Platform Polish
+
+Use the same fixed setup command. Success ends with **`CodyNick 0.10.3: READY`**.
+IDE and Blockly now have Stop. Run explicitly restarts the student script even if
+unchanged; Save after Stop does not resume it. A restricted Unix socket handles only
+Start/Stop outside Apache's unchanged sandbox; the old local-test sudo rule is removed.
+The watchdog remains running. Camera/microphone child processes receive the existing
+graceful stop, with forced cleanup after the existing 10-second timeout if needed.
+Physical LEDs can retain their last state. Simulator editing unlocks after its lease expires.
+
+Both Events blocks have curved hats. All tools have graphical Main Panel buttons and
+the supplied CodyNick favicon. Refresh with Ctrl+F5; reopen tabs if the browser retains
+an old favicon. The main panel shows CJP firmware and last-detected UTC time after a
+physical script handshake. Old firmware without a version shows Unknown; before the
+first detection it shows Not detected yet. This is historical status, not a live probe.
+
+Original 0.10.2 remains selectable for rollback via `python tools/select_release.py 0.10.2`
+and committing/pushing the selector. Pi users keep the same fixed command.
+
+## 0.10.2: Tool Navigation and Soil Moisture
+
+Use the same fixed setup command. Success ends with **`CodyNick 0.10.2: READY`**.
+All tools have Main Panel navigation. The simulator retains your browser hostname
+(for example `http://start.codynick:8091/`) instead of redirecting to a numeric IP.
+Accessing the panel by IP still retains that IP. Simulated soil moisture is 0 to
+100 percent, default 50. Old scene layouts are retained; old readings above 100
+are clamped to 100. Refresh tool pages with Ctrl+F5 after upgrading.
+Hardware drivers, AI models, and network behavior are unchanged. Maintainers can
+select original 0.10.1 with `python tools/select_release.py 0.10.1`, commit and
+push the selector, and users rerun the same fixed command to downgrade.
+
+## 0.10.1: Blockly Control and Operators
+
+Use the same fixed setup command. Success ends with **`CodyNick 0.10.1: READY`**.
+Open Block Coding from the main-menu card or `/blocks/`. Control includes wait seconds,
+if/then, if/then/else, while, repeat-until, forever, and repeat N times. Operators
+contains arithmetic, comparisons, and boolean operations. Control blocks are orange;
+Operators are green. Existing saved workspaces are retained. Refresh with Ctrl+F5
+after upgrading if an old page remains cached.
+
+No hardware drivers, AI models, or network behavior changed. Original 0.10.0 is
+available for rollback using `python tools/select_release.py 0.10.0` followed by
+committing and pushing the selector; Pi users rerun the same fixed command.
+
+## 0.10.0: Gadget Simulator
+
+Use the same fixed install/repair/upgrade command. Success ends with **`CodyNick 0.10.0: READY`**. No PC version is included; Ubuntu 26.04 ARM64 on Raspberry Pi remains required.
+
+Open **Gadget Simulator** in the main panel, or `http://10.42.0.1/simulator/`. It includes the tested drag-and-drop stage, saved layouts, CJP, Stand-Alone joystick, temperature, ultrasonic, soil moisture, seven-segment, scrolling/pixel LED matrix and an offline Wi-Fi/IoT model. Existing prototype layouts and tokens are retained. Browser audio requires clicking Enable sound.
+
+Examples are under **CodyNick examples/simulator**. Add their required gadgets before running them. The on-device documentation has a Gadget Simulator reference under Start Here. No physical hardware is used by `CodyNick.Simulator()`; hardware programs keep `CodyNick.CN()` unchanged.
+
+To change the stage's hardware set while a program is running, stop it in SSH with `sudo systemctl stop script.service`. Add/remove gadgets, then choose Run This File again. A dedicated Stop button is not included in this release.
+
+### Easy Downgrade With the Same User Command
+
+The updater engine is now separate from its selected application target. If this release has a problem, the maintainer can point GitHub back to the **original immutable** 0.9.10, 0.9.9 or 0.9.8 release. You then run the SAME fixed setup command. No special rollback command, SD rewrite or renamed/re-created old release is needed on the Pi.
+
+The selected older release's original manifest and checksums determine the deployed application files and displayed version. The current compatible updater handles the migration. The simulator service is disabled on an older release and simulator-only web pages are archived; its layout/token are retained for reuse. Student files, database, Wi-Fi configuration and existing credentials are preserved. System-owned examples are replaced as usual and backed up first.
+
+This is an **application rollback**, not an Ubuntu package, AI runtime, firmware or database snapshot rollback. Backups are stored under `/var/backups/codynick/core-*`. Verify `codynick-version` shows the selected version and `Stage: ready` afterward.
+
+Maintainer workflow (not commands for the Pi user):
+
+```bash
+python tools/select_release.py 0.9.10
+git diff -- setup.sh
+git add setup.sh
+git commit -m "Select original CodyNick 0.9.10 for rollback"
+git push origin HEAD:main
+```
+
+Select 0.9.9 or 0.9.8 the same way; select 0.10.0 to move forward again. This changes only the active target and its immutable tag/checksum; it does not rewrite Git history or move published tags. Do not revert the entire updater to an older incompatible script: retain the current stable engine and roll back the target selector instead. Do not run `seal_core_release.py` after selecting a rollback target, because that build tool selects the new release again.
+
+Version 0.9.10 removes the zero/below-120 restriction from the temperature dashboard example and skips NaN and missing readings instead. Use the same setup command to upgrade from 0.9.9.
+Targets Ubuntu Server 26.04 ARM64 on Raspberry Pi 5. Network setup and core 0.2.2
+have passed fresh-OS testing, IDE/run/live-output tests, and a CodyJoy RGB hardware
+test. Version 0.3.0 adds USB-camera/object detection and colored terminal output;
+USB-camera capture and default-model object detection passed the user's Pi test.
+Version 0.4.0 adds the vision demos prepared for 0.3.1 plus offline English
+speech-to-text and a microphone-to-RGB voice-command demo; both camera detection and
+the voice LED demo passed the user's Pi tests.
+Version 0.4.1 fixes same-command confirmation after hotspot handover when sudo
+does not retain the SSH connection environment. Version 0.5.0 adds offline English
+camera OCR, corrects the `start.codynick` homepage, retries interrupted source/OCR
+downloads, and releases the setup lock before following the live log.
+Version 0.5.1 adds a joystick-triggered OCR-to-RGB beginner demo. Version 0.5.2
+adds the established CodyJoy countdown/cue and USB-speaker shutter sound to every
+bundled camera-capture example, with a CodyJoy buzzer fallback for shutter playback.
+Version 0.5.3 replaces the complete system-owned examples folder on every setup run,
+uses stable camera filenames, adds adjustable OCR sensitivity and tolerant text
+matching, keeps OCR result LEDs on for five seconds, and adds `codynick-version`.
+Version 0.6.0 adds offline English text-to-speech, persistent named WAV files, and
+separate beginner examples for generating speech once and replaying it later without
+loading the TTS model again.
+Version 0.6.1 repairs ownership of the restored TTS environment and models so Coqui
+can update its cached configuration while running as the `client` account.
+Version 0.7.0 replaces the placeholder on-device documentation with an offline guide
+to the installed IDE, gadgets, dashboard, media, and AI features. It bundles gadget
+images and Blockly locally. One-shot captures now release the USB camera immediately,
+multi-photo demos opt in explicitly, and service restarts request graceful cleanup.
+Version 0.7.1 expands that guide into a programmer's reference for the local Dashboard,
+CodyNick controller Wi-Fi/cloud API, and every public CodyNick AI operation, including
+signatures, parameters, return structures, examples, errors, and lifecycle rules.
+Version 0.7.2 adds a password-protected offline teacher portal and its first progressive
+live-coding guide. It also repairs normal-user version reporting and makes the main
+panel's software version and release date update with every release.
+Version 0.7.3 restricts CodyJoy Pro discovery to USB serial devices, removes redundant
+pre-scan/open delays, waits a tested fixed two seconds after opening, and requires the
+exact CodyJoy Pro identity. It does not cache ports, retry identification, or offer
+multi-device selection yet.
+Version 0.7.4 adds public, copyable test pages for eleven gadget groups, keeps their
+Markdown sources in a separately managed on-device folder, revises the temperature
+presenter guide, removes seven-segment debug noise, and improves multi-LED reliability.
+Version 0.7.5 repairs the 0.7.4 Windows line-ending checksum defect and makes release
+sealing checksum Git-normalized text, while preserving the same user-facing features.
+Version 0.7.6 adds the first AI transition to the presenter guide: connect a USB camera,
+capture one reusable image, and preview it from the IDE.
+Version 0.7.7 completes the first presenter path with camera sounds, object detection,
+voice-controlled LEDs, and a managed temperature/color display example.
+Version 0.7.8 adds the tested temperature alarm/inhibit behavior and a managed
+CodyJoy Pro joystick, LED-region, and high-note hardware test.
+Version 0.8.1 adds a pinned local Gemma 3 1B Q4 model, explicit model loading,
+short-question generation and cleanup controls. Version 0.8.2 adds `load_stt()`,
+updates the voice examples and references, makes the Local AI example compatible with
+the IDE, and prefers IPv4 for setup downloads.
+Version 0.9.0 adds the tested local-AI voice conversation and migrates the hotspot to
+boot-time selection among non-DFS 5 GHz channels. Cloned images receive a unique
+hardware-derived identity and hotspot name.
+Version 0.9.1 fixes hotspot startup on Ubuntu 26.04, whose `iw` output reports
+5 GHz frequencies with a decimal suffix such as `5180.0 MHz`.
+Version 0.9.2 disables automatic Ubuntu package updates, repairs interrupted or
+corrupted package-manager prerequisites, adds persistent installation logs and
+status commands, synchronizes hotspot identity with the web panel, and installs
+the offline CodyJoy Pro HEX-programming guide.
+Version 0.9.9 expands the teacher presenter guide with a live dashboard reveal and a Local AI conversation finale. Version 0.9.8 adds the tested temperature dashboard example with missing-reading handling, a non-zero/below-120 filter, and elapsed seconds on the graph. Version 0.9.6 added configurable graph axes, five-line grids, one-based samples, and card height spans. Version 0.9.5 redraws charts at their real responsive size for sharp, undistorted output. Version 0.9.4 added responsive dashboard card widths and a live temperature-history example. Version 0.9.3 added safe per-widget dashboard typography and alignment controls,
+plus simple dashboard-counter and LED-matrix temperature demonstrations.
+Version 0.7.11 repaired the upgrade gate for devices coming from 0.7.9 or the failed
+0.7.10 attempt. Version 0.7.10 replaced the fixed controller startup delay with adaptive polling: fast
+units connect immediately, while slower CodyJoy Pro units have up to five seconds to
+identify. Version 0.7.9 added a wake-phrase conversation demo, overwrite-safe prerecorded answer
+generation, multi-question sessions, sleep commands, expressive gadget feedback, and
+an offline compact platform knowledge base for AI coding agents.
+
+The matching CodyPi firmware source is `firmware/CodyPi/CodyPi.ino`, version 1.19.4.
+Its former blocking `delay(2000)` remains disabled while joystick initialization and
+calibration remain enabled. The Raspberry Pi setup command does not flash CodyPi;
+install this firmware separately before testing the shortened host delay.
+
+**Use this same command for first installation, a supported upgrade, or application
+repair. Already on the verified hotspot? Run it now without rewriting the SD card:**
+
+```bash
+wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
+```
+
+It chooses the required stage and shows the installation log. It accepts core
+0.2.0, 0.2.1, 0.2.2, 0.3.0, the unpublished 0.3.1 candidate, 0.4.0, 0.5.0,
+0.5.1, 0.5.2, 0.5.3, 0.6.0, 0.6.1, 0.7.0, 0.7.1, 0.7.2, 0.7.3, 0.7.4, 0.7.5, 0.7.6, 0.7.7, 0.7.8, 0.7.9, failed 0.7.10, 0.7.11, 0.8.1, 0.8.2, 0.9.0, 0.9.1, 0.9.2, 0.9.3, 0.9.4, 0.9.5, 0.9.6, 0.9.7, 0.9.8, and repeats of 0.9.9. Upstream stage scripts/assets are pinned
+to immutable versions with SHA256 checks. Only the small entry point follows main;
+the application and network stages use fixed release tags.
+
+On a fresh OS, the network switch still disconnects SSH. Join the displayed Pi
+hotspot, reconnect at 10.42.0.1, and run **the same command** within 15 minutes.
+It performs the network confirmation and continues to applications. No separate
+`--confirm` command is required with this entry point. Answer its confirmation prompt.
+
+Have the USB webcam and a USB microphone (a webcam microphone is acceptable)
+connected. Version 0.6.0 adds approximately **964 MB** of TTS downloads. A fresh
+installation downloads about **1.4 GB** across all application assets. Allow at least
+6 GB free storage. Downloads are cached and verified; repair restores managed runtime
+files. Face features and chapter 8 are not installed yet. TTS hardware acceptance is
+pending, so this remains a staged hardware trial, not a production fleet updater.
+
+### Release Summary
 
 | Version | Status | What is new |
 | --- | --- | --- |
