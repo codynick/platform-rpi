@@ -46,7 +46,7 @@ class ReleaseSelectionTests(unittest.TestCase):
                 installer.select_target(manifest)
                 self.assertEqual(installer.VERSION, version)
                 self.assertEqual(installer.TAG, manifest['tag'])
-                self.assertEqual(installer.BASE, f"https://raw.githubusercontent.com/Sohaware/rpi/{manifest['tag']}/")
+                self.assertEqual(installer.BASE, f"https://raw.githubusercontent.com/codynick/platform-rpi/{manifest['tag']}/")
                 installer.verify_manifest(manifest)
                 self.assertNotIn('simulator', manifest['components'])
                 with patch.object(installer.platform, 'freedesktop_os_release', return_value={'ID':'ubuntu','VERSION_ID':'26.04'}), \

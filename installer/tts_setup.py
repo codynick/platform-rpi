@@ -150,7 +150,7 @@ def install(manifest, run):
         if target.exists() and target.stat().st_size == item["size"] and sha(target) == item["sha256"]:
             continue
         print("Downloading TTS asset:", name, flush=True)
-        download(f"https://github.com/Sohaware/rpi/releases/download/{TAG}/{name}", target, item)
+        download(f"https://github.com/codynick/platform-rpi/releases/download/{TAG}/{name}", target, item)
     for item in assets:
         print("Restoring verified TTS asset:", item["name"], flush=True)
         restore_archive(cache / item["name"])

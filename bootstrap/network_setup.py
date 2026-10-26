@@ -214,7 +214,7 @@ def internet(interface):
     # Binding the socket to the device prevents the built-in Wi-Fi hiding a failure.
     r = run('curl', '--interface', interface, '-4', '--fail', '--silent',
             '--show-error', '--connect-timeout', '8', '--max-time', '20',
-            '--output', '/dev/null', 'https://github.com/Sohaware/rpi',
+            '--output', '/dev/null', 'https://github.com/codynick/platform-rpi',
             check=False, capture=True)
     return r.returncode == 0
 

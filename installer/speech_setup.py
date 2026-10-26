@@ -122,7 +122,7 @@ def install(manifest, run):
         print("Downloading speech asset:", name, flush=True)
         temporary = target.with_suffix(".part")
         with urllib.request.urlopen(
-            f"https://github.com/Sohaware/rpi/releases/download/{TAG}/{name}",
+            f"https://github.com/codynick/platform-rpi/releases/download/{TAG}/{name}",
             timeout=180,
         ) as source, temporary.open("wb") as output:
             received = 0

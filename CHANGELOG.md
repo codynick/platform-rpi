@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.1-repository-migration - 2026-10-26
+
+- Move active installer, source, release-asset and documented setup URLs to codynick/platform-rpi.
+- Reseal the new release without rewriting published tags; retain original 0.11.0 and earlier rollback targets.
+- No hardware, AI-model, or network behavior changes.
+
 ## 0.11.0-sprite-designs - Integrated sprite stage and named designs
 
 - Integrated, collapsible sprite stage with one rocket and three backdrops; sprite-only programs do not open CJP.

@@ -2,7 +2,11 @@
 
 ## Current version
 
-**Unified setup: 0.11.0; application: 0.11.0; network component: 0.2.2.**
+**Unified setup: 0.11.1; application: 0.11.1; network component: 0.2.2.**
+
+## 0.11.1: Repository Migration
+
+The repository is now `codynick/platform-rpi`. Installer source and release-asset URLs use the transferred repository. Success ends with **`CodyNick 0.11.1: READY`**. Published older tags and rollback payloads are unchanged. No gadget, AI-model, or network behavior changes.
 
 ## 0.11.0: Integrated Sprite Stage and Named Designs
 
@@ -184,7 +188,7 @@ install this firmware separately before testing the shortened host delay.
 repair. Already on the verified hotspot? Run it now without rewriting the SD card:**
 
 ```bash
-wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/Sohaware/rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
+wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
 ```
 
 It chooses the required stage and shows the installation log. It accepts core
@@ -256,7 +260,7 @@ This initial DHCP address can change. Do not assume it matches a previous SD car
 ## 3. Run the single setup command
 
 ```bash
-wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/Sohaware/rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
+wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
 ```
 
 The entry banner is **0.10.0** and its pinned network component reports **0.2.2**.
@@ -291,7 +295,7 @@ ssh admin@10.42.0.1
 From that SSH session, confirm within **15 minutes**:
 
 ```bash
-wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/Sohaware/rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
+wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
 ```
 
 Answer `y`. Success reports `Stage: network-ready` and disables rollback, then the
@@ -343,7 +347,7 @@ or repeat the network handover.** Keep the external internet network available.
 Run these commands in the Pi's existing administrator SSH session at `10.42.0.1`:
 
 ```bash
-wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/Sohaware/rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
+wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
 ```
 
 Installation runs in the background, so closing SSH does not stop it. Do not reboot

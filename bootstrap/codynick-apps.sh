@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 umask 022
-VERSION="0.11.0"
-VISION_SHA256="63e350ccdde8e755e194f97e2e3294ef2a90c10ca36d16fafaa78ce8c2edc1dc"
-SPEECH_SHA256="c6a365e6ff8e5cde5a44e60fdffcaec7d0466349da41b42cbada937891fd4518"
-OCR_SHA256="3524f9157a67f1196fff7a247ce2045452a58b9d9e86a70d271480eda06d2f0b"
-TTS_SHA256="3ecd2d623c50fe3cc242904c9b3f5425b4245024430a791588f13ea5c37fff0c"
+VERSION="0.11.1"
+VISION_SHA256="0d28804e08194680ebc149d5b8caadcde46ceb2b8f5366ac7240f1999791c42a"
+SPEECH_SHA256="ac5f4cb76405a26ec3b9f09b82fd7143f3306dfc0f6db9077f9b5e744e9314a7"
+OCR_SHA256="881e4a795e30a524176a14f7ea5e9a7e942e4b53d38e66e10c7fd55267f897bc"
+TTS_SHA256="6567eb8cf701d468016895e93cd44d4cd8831e2b03c9b3266d6272c319527065"
 LLM_SHA256="d22acd8c728ffd5b84d9bc9d7e76f4892648e6fa057e8fb78a238dab4602d2ed"
-TAG="v0.11.0-sprite-designs"
-HELPER_SHA256="7417657cf9c758e3204ba63403e9741ff66decf618f3d96b51a28af49e72de53"
-MANIFEST_SHA256="a3d669a2ce22db084dbe2c154addfef2f69ee16ff86629cf206cf2cd49b894cd"
-VERSION_STATUS_SHA256="e78510b1b7bf3ffa2cd58d15eb66690c884a16752074e9a9dda3b8b792590d9a"
-BASE="https://raw.githubusercontent.com/Sohaware/rpi/${TAG}"
+TAG="v0.11.1-repository-migration"
+HELPER_SHA256="c2658e980535b9bdf0c37970bb08e8c302b33a47c28b7ef83891d67af3949999"
+MANIFEST_SHA256="b841f160115bcb54b260ab858f7456dfb87819f39a6c1be206818b252bba765e"
+VERSION_STATUS_SHA256="a306cb1bc2ccd2e6b42b4c420502922de6f793c015a736184e4752016079a09b"
+BASE="https://raw.githubusercontent.com/codynick/platform-rpi/${TAG}"
 TARGET_VERSION="${CODYNICK_TARGET_VERSION:-$VERSION}"
 TARGET_TAG="${CODYNICK_TARGET_TAG:-$TAG}"
-TARGET_MANIFEST_SHA256="a3d669a2ce22db084dbe2c154addfef2f69ee16ff86629cf206cf2cd49b894cd"
-TARGET_BASE="https://raw.githubusercontent.com/Sohaware/rpi/${TARGET_TAG}"
+TARGET_MANIFEST_SHA256="b841f160115bcb54b260ab858f7456dfb87819f39a6c1be206818b252bba765e"
+TARGET_BASE="https://raw.githubusercontent.com/codynick/platform-rpi/${TARGET_TAG}"
 [[ "$TARGET_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && "$TARGET_TAG" =~ ^v[0-9A-Za-z.-]+$ && "$TARGET_MANIFEST_SHA256" =~ ^[0-9a-f]{64}$ ]] || { echo 'Invalid target release selector'; exit 1; }
 echo "CodyNick core bootstrap ${VERSION} (local AI conversation and 5 GHz network)"
 if [[ $EUID -ne 0 ]]; then
@@ -107,21 +107,21 @@ manifest = json.loads(pathlib.Path(sys.argv[1]).read_text())
 if manifest.get('version') != sys.argv[2] or manifest.get('tag') != sys.argv[3]:
     raise SystemExit('Incorrect release manifest')
 PY
-install -d -m 0755 /usr/local/lib/codynick/core-0.11.0
-install -m 0644 "$temp/app_setup.py" /usr/local/lib/codynick/core-0.11.0/app_setup.py
-install -m 0644 "$temp/core-manifest.json" /usr/local/lib/codynick/core-0.11.0/core-manifest.json
-install -m 0644 "$temp/version_status.py" /usr/local/lib/codynick/core-0.11.0/version_status.py
-install -m 0644 "$temp/vision_setup.py" /usr/local/lib/codynick/core-0.11.0/vision_setup.py
-install -m 0644 "$temp/speech_setup.py" /usr/local/lib/codynick/core-0.11.0/speech_setup.py
-install -m 0644 "$temp/ocr_setup.py" /usr/local/lib/codynick/core-0.11.0/ocr_setup.py
-install -m 0644 "$temp/tts_setup.py" /usr/local/lib/codynick/core-0.11.0/tts_setup.py
-install -m 0644 "$temp/llm_setup.py" /usr/local/lib/codynick/core-0.11.0/llm_setup.py
+install -d -m 0755 /usr/local/lib/codynick/core-0.11.1
+install -m 0644 "$temp/app_setup.py" /usr/local/lib/codynick/core-0.11.1/app_setup.py
+install -m 0644 "$temp/core-manifest.json" /usr/local/lib/codynick/core-0.11.1/core-manifest.json
+install -m 0644 "$temp/version_status.py" /usr/local/lib/codynick/core-0.11.1/version_status.py
+install -m 0644 "$temp/vision_setup.py" /usr/local/lib/codynick/core-0.11.1/vision_setup.py
+install -m 0644 "$temp/speech_setup.py" /usr/local/lib/codynick/core-0.11.1/speech_setup.py
+install -m 0644 "$temp/ocr_setup.py" /usr/local/lib/codynick/core-0.11.1/ocr_setup.py
+install -m 0644 "$temp/tts_setup.py" /usr/local/lib/codynick/core-0.11.1/tts_setup.py
+install -m 0644 "$temp/llm_setup.py" /usr/local/lib/codynick/core-0.11.1/llm_setup.py
 systemctl reset-failed codynick-install.service 2>/dev/null || true
 # A transient unit survives SSH disconnection, but intentionally does not survive reboot.
 flock -u 8
 systemd-run --unit=codynick-install --collect --property=Type=exec \
     --property=StandardOutput=append:${LOG} --property=StandardError=append:${LOG} \
-    /usr/bin/python3 -u /usr/local/lib/codynick/core-0.11.0/app_setup.py --worker
+    /usr/bin/python3 -u /usr/local/lib/codynick/core-0.11.1/app_setup.py --worker
 echo
 echo 'Installation is running in the background. Do not reboot until it finishes.'
 echo 'Follow progress: codynick-install-log --follow'

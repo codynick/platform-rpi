@@ -113,7 +113,7 @@ def install(manifest, run):
             continue
         print('Downloading vision asset:', name, flush=True)
         temp = target.with_suffix('.part')
-        with urllib.request.urlopen('https://github.com/Sohaware/rpi/releases/download/v0.3.0-vision/' + name, timeout=180) as source, temp.open('wb') as out:
+        with urllib.request.urlopen('https://github.com/codynick/platform-rpi/releases/download/v0.3.0-vision/' + name, timeout=180) as source, temp.open('wb') as out:
             received = 0
             report_at = 16 * 1024 ** 2
             for block in iter(lambda: source.read(1024 * 1024), b''):

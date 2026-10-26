@@ -2,9 +2,9 @@
 set -euo pipefail
 
 VERSION="0.2.2"
-REF="v0.11.0-sprite-designs"
-HELPER_SHA256="280a37caf40b4741cacd846c2457e2f4ad56c9d8f1158285a3975742b184667e"
-BASE_URL="https://raw.githubusercontent.com/Sohaware/rpi/$REF"
+REF="v0.11.1-repository-migration"
+HELPER_SHA256="23d2da5e5176f8f1806f41886fffb7ff15bc6f717825483dccfa46f438401e37"
+BASE_URL="https://raw.githubusercontent.com/codynick/platform-rpi/$REF"
 
 echo "CodyNick network setup $VERSION"
 if [[ ${1:-} == --version ]]; then exit 0; fi

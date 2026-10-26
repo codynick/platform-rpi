@@ -14,14 +14,15 @@ import tempfile
 import time
 import urllib.request
 
-VERSION = "0.11.0"
-TAG = "v0.11.0-sprite-designs"
+VERSION = "0.11.1"
+TAG = "v0.11.1-repository-migration"
 ENGINE_VERSION = VERSION
 ENGINE_TAG = TAG
-RELEASE_DATE = "2026-10-21"
+RELEASE_DATE = "2026-10-26"
 RELEASE_DIRECTORY = Path(__file__).resolve().parent
 TARGET_RELEASES = {
     "0.11.0": ("v0.11.0-sprite-designs", "2026-10-21"),
+    "0.11.1": ("v0.11.1-repository-migration", "2026-10-26"),
     "0.10.3": ("v0.10.3-script-controls", "2026-10-21"),
     "0.10.2": ("v0.10.2-tool-navigation", "2026-10-20"),
     "0.10.0": ("v0.10.0-gadget-simulator", "2026-10-20"),
@@ -30,7 +31,7 @@ TARGET_RELEASES = {
     "0.9.9": ("v0.9.9-presenter-guide", "2026-10-19"),
     "0.9.8": ("v0.9.8-temperature-time", "2026-10-19"),
 }
-BASE = f"https://raw.githubusercontent.com/Sohaware/rpi/{TAG}/"
+BASE = f"https://raw.githubusercontent.com/codynick/platform-rpi/{TAG}/"
 STATE = Path("/var/lib/codynick/application-state.json")
 NETWORK = Path("/var/lib/codynick/network-setup.json")
 NETWORK_PUBLIC = Path("/var/lib/codynick/network-public.json")
@@ -49,7 +50,7 @@ def select_target(manifest):
         raise RuntimeError('Unsupported upgrade/downgrade target; no application files were changed.')
     VERSION = manifest['version']
     TAG, RELEASE_DATE = target
-    BASE = f'https://raw.githubusercontent.com/Sohaware/rpi/{TAG}/'
+    BASE = f'https://raw.githubusercontent.com/codynick/platform-rpi/{TAG}/'
 
 
 def run(*args, **kwargs):
@@ -242,7 +243,7 @@ def check_platform():
     for service in SERVICES:
         run("systemctl", "is-active", "--quiet", service)
     previous = read_json(STATE)
-    if previous and previous.get("version") not in ("0.2.0", "0.2.1", "0.2.2", "0.3.0", "0.3.1", "0.4.0", "0.5.0", "0.5.1", "0.5.2", "0.5.3", "0.6.0", "0.6.1", "0.7.0", "0.7.1", "0.7.2", "0.7.3", "0.7.4", "0.7.5", "0.7.6", "0.7.7", "0.7.8", "0.7.9", "0.7.10", "0.7.11", "0.8.1", "0.8.2", "0.9.0", "0.9.1", "0.9.2", "0.9.3", "0.9.4", "0.9.5", "0.9.6", "0.9.7", "0.9.8", "0.9.9", "0.9.10", "0.10.0", "0.10.1", "0.10.2", "0.10.3", ENGINE_VERSION, VERSION):
+    if previous and previous.get("version") not in ("0.2.0", "0.2.1", "0.2.2", "0.3.0", "0.3.1", "0.4.0", "0.5.0", "0.5.1", "0.5.2", "0.5.3", "0.6.0", "0.6.1", "0.7.0", "0.7.1", "0.7.2", "0.7.3", "0.7.4", "0.7.5", "0.7.6", "0.7.7", "0.7.8", "0.7.9", "0.7.10", "0.7.11", "0.8.1", "0.8.2", "0.9.0", "0.9.1", "0.9.2", "0.9.3", "0.9.4", "0.9.5", "0.9.6", "0.9.7", "0.9.8", "0.9.9", "0.9.10", "0.10.0", "0.10.1", "0.10.2", "0.11.1", "0.11.0", "0.10.3", ENGINE_VERSION, VERSION):
         raise RuntimeError("This version cannot migrate that application release")
     if not previous and (Path("/root/codynick/service.py").exists() or Path("/home/client/CodyNick.py").exists()):
         raise RuntimeError("Existing legacy installation: migration must be reviewed before deployment")
