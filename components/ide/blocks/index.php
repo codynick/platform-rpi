@@ -67,6 +67,8 @@ function control_script(string $action): void {
     if (!is_array($result) || empty($result['ok'])) {
         json_response(['ok' => false, 'error' => 'Script control failed: ' . ($result['error'] ?? 'No response from control service.')], 500);
     }
+    require_once __DIR__ . '/../dashboard/reset-inputs.php';
+    try { dashboard_reset_inputs(); } catch (Throwable $error) { error_log('Dashboard input reset: ' . $error->getMessage()); }
 }
 
 function safe_write_file(string $path, string $content, ?string &$error = null): bool {
@@ -702,7 +704,7 @@ if ($api === 'run') {
 </dialog>
 
 <script src="/blocks/stage.js"></script>
-<script src="/blocks/designs.js"></script>
+<script src="/blocks/designs.js?v=0.12.0"></script>
 <script>
 const BLOCK_PACKAGES = <?= json_encode($BLOCK_PACKAGES, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
 const BLOCK_WARNINGS = <?= json_encode($BLOCK_WARNINGS, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
@@ -1458,8 +1460,20 @@ async function stopProgram() {
   }
 }
 
-function downloadWorkspace() {
-  const json = JSON.stringify(currentWorkspaceJson(), null, 2);
+async function dashboardProjectSnapshot() {
+  const response=await fetch('/dashboard/cards.php?action=export',{cache:'no-store'});
+  const result=await response.json();
+  if(!response.ok || !result.ok)throw Error(result.error || 'Could not save dashboard.');
+  return result.dashboard;
+}
+async function restoreDashboardProject(dashboard) {
+  await postJson('/dashboard/cards.php?action=restore',{dashboard});
+}
+async function downloadWorkspace() {
+  let snapshot=currentWorkspaceJson();
+  try { snapshot.codynick_dashboard=await dashboardProjectSnapshot(); }
+  catch(error){toast(error.message,true);return;}
+  const json = JSON.stringify(snapshot, null, 2);
   const blob = new Blob([json], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1478,13 +1492,18 @@ document.getElementById('importFile').addEventListener('change', async (ev) => {
   const file = ev.target.files[0];
   ev.target.value = '';
   if (!file) return;
+  if (file.size>2097152) {toast('Design exceeds 2 MB.',true);return;}
   if (!NamedDesigns.confirmReplace()) return;
+  if (!confirm('Load this design and its saved dashboard? Stop the running program first.')) return;
 
   try {
     const text = await file.text();
     const json = JSON.parse(text);
     const previous = currentWorkspaceJson();
-    try { Blockly.serialization.workspaces.load(json, workspace); }
+    try {
+      Blockly.serialization.workspaces.load(json, workspace);
+      if(json.codynick_dashboard) await restoreDashboardProject(json.codynick_dashboard);
+    }
     catch(error) { Blockly.serialization.workspaces.load(previous, workspace); throw error; }
     updatePythonPreview(true);
     await saveWorkspaceNow(true);

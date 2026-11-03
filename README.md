@@ -54,7 +54,7 @@ This initial DHCP address can change. Do not assume it matches a previous SD car
 wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
 ```
 
-The entry banner is **0.10.0** and its pinned network component reports **0.2.2**.
+The entry banner is **0.12.0** and its pinned network component reports **0.2.2**.
 On first installation, answer `y` to
 `Prepare this network handover? [y/N]`.
 
@@ -90,7 +90,7 @@ wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/pl
 ```
 
 Answer `y`. Success reports `Stage: network-ready` and disables rollback, then the
-same entry point starts application installation. Wait for `CodyNick 0.10.0: READY`
+same entry point starts application installation. Wait for `CodyNick 0.12.0: READY`
 before rebooting. No root password is set. The older internal network helper may
 still mention `--confirm`; the unified entry point invokes it for you.
 
@@ -143,7 +143,7 @@ wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/pl
 
 Installation runs in the background, so closing SSH does not stop it. Do not reboot
 or power off until it finishes. The command automatically follows its log.
-Wait for **`CodyNick 0.10.0: READY`**, then press
+Wait for **`CodyNick 0.12.0: READY`**, then press
 `Ctrl+C` to leave the log display. If you see `INSTALLATION FAILED`, send the last
 30-50 log lines for diagnosis; do not continue as though installation succeeded.
 
@@ -258,7 +258,7 @@ student data separately before any deployment.
 To view the installed component versions and run health checks:
 
 ```bash
-sudo python3 /usr/local/lib/codynick/core-0.10.0/app_setup.py --check
+sudo python3 /usr/local/lib/codynick/core-0.12.0/app_setup.py --check
 ```
 
 For a compact version report and checksum status for every system example:
@@ -395,11 +395,43 @@ Tests cover configuration preservation, interface detection, channel scoring and
 fallback, clone identity, HTTPS binding, confirmation, rollback, and subprocess
 permissions. Hardware acceptance remains required on the target Pi and client devices.
 
+
+## Dashboard tools (0.12.0)
+
+Open `/dashboard/` after updating and refresh existing tabs. Use **Edit layout** to
+drag the Move/Resize handles or focus a handle and use arrow keys. **Lock layout**
+protects the arrangement; Escape cancels a drag. Layouts are saved on the Pi and
+shared across browsers. Existing eleven card types remain available.
+
+New momentary buttons support held reads, queued taps and abandoned-hold expiry.
+Sliders support steps and direct numeric entry. Download/Upload dashboard transfers
+cards, values and layout; stop the old program before restoring. Named Blockly
+Save/Load and `.codynick` Download/Upload include the dashboard. Existing designs
+without a dashboard remain readable. Native Python can bundle source and dashboard
+with `Dashboard.save_project()` and restore with `Dashboard.load_project()`; saved
+source is returned as text and never executed automatically.
+
+See [dashboard usage](components/ide/dashboard/README.md). Software checks cover
+PHP/MySQL, native Python and desktop Chrome. Installation/reboot and physical Pi
+acceptance of 0.12.0 remain pending. Use the same one-line setup command above.
+
 ## Revision History
 
 ## Current version
 
-**Unified setup: 0.11.1; application: 0.11.1; network component: 0.2.2.**
+**Unified setup: 0.12.0; application: 0.12.0; network component: 0.2.2.**
+
+## 0.12.0: Dashboard Tools
+
+Adds draggable/resizable, grid-snapped and lockable shared dashboard layouts;
+momentary held/tap buttons; stepped sliders with numeric input; dashboard snapshots
+and Blockly/Python project integration; and stable live card updates. Retains all
+eleven existing card types, latch buttons and the native Python/PHP/MySQL stack.
+Adds database columns/tables without deleting existing records. Older immutable
+release targets remain available; older releases ignore the new metadata.
+
+Software integration and browser checks pass; physical Pi installation/reboot and
+hardware validation remain pending. Success reports **CodyNick 0.12.0: READY**.
 
 ## 0.11.1: Repository Migration
 
@@ -610,6 +642,7 @@ pending, so this remains a staged hardware trial, not a production fleet updater
 
 | Version | Status | What is new |
 | --- | --- | --- |
+| **0.12.0-dashboard-tools** | PHP/MySQL/native Python and Chrome checks; Pi acceptance pending | Interactive shared layouts, hold/tap buttons, stepped sliders, dashboard projects and stable live updates. |
 | **0.10.0-gadget-simulator** | Automated integration checks; full RPi upgrade acceptance pending | Tested simulator, managed examples and same-command release rollback. |
 | **0.9.10-temperature-nan** | Automated checks; Raspberry Pi acceptance pending | Temperature dashboard accepts zero/high readings and rejects NaN/missing values. |
 | **0.9.9-presenter-guide** | Automated checks; Raspberry Pi acceptance pending | Fourteen-step presenter guide with the live temperature dashboard and Local AI conversation finale. |

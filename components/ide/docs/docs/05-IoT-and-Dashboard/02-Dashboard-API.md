@@ -175,6 +175,32 @@ reading every 2.5 seconds plus the time spent reading and updating the dashboard
 
 ## Deterministic cleanup
 
+## Interactive buttons, sliders and saved dashboard projects (0.12.0)
+
+Create a momentary control with
+`Dashboard.Card("button", "Hold", value=False, button_mode="momentary")`.
+`pressed()` reads its current held state without consuming it; `clicked()` consumes
+one queued tap. Mouse, touch and Space/Enter are supported. Holds expire after
+1.5 seconds without renewal and are released on focus loss or editor Run/Stop.
+Legacy buttons retain their original click-and-reset behavior.
+
+Use `step=5` with a slider to select values in steps from its minimum. `value=`
+sets its initial value. Numeric entry appears beside the range control; Enter or
+leaving the field commits it. Browser and server clamp/snap values consistently.
+
+The dashboard's Edit layout, Lock layout and Reset layout controls manage shared
+positions and sizes saved on the Pi. Move/Resize handles support dragging and
+arrow keys; Escape cancels an unfinished drag. Download/Upload dashboard transfers
+card configuration, values and layout. Named/transferred Blockly designs include
+the dashboard too. Stop a running program before loading a snapshot.
+
+`Dashboard.save_project("project.json", program_path="my_program.py")` bundles
+dashboard state with optional Python source. `Dashboard.load_project("project.json")`
+restores the dashboard and returns the source as text without executing it.
+Restored buttons start released; held ownership and queued taps are excluded.
+
+### Cleanup example
+
 ```python
 with Dashboard.Card("info", "State", value="Starting") as state:
     state.set("Running")

@@ -25,6 +25,8 @@ Dependency:
 from __future__ import annotations
 
 import json
+import time
+from pathlib import Path
 import threading
 from typing import Any, Dict, Optional, Union
 
@@ -183,6 +185,7 @@ def ensure_table() -> None:
                 "y_padding_percent": f"ALTER TABLE `{_TABLE_NAME}` ADD COLUMN y_padding_percent FLOAT DEFAULT 0 AFTER height_multiplier",
                 "x_axis_label": f"ALTER TABLE `{_TABLE_NAME}` ADD COLUMN x_axis_label VARCHAR(50) DEFAULT NULL AFTER y_padding_percent",
                 "y_axis_label": f"ALTER TABLE `{_TABLE_NAME}` ADD COLUMN y_axis_label VARCHAR(50) DEFAULT NULL AFTER x_axis_label",
+                "input_options": f"ALTER TABLE `{_TABLE_NAME}` ADD COLUMN input_options TEXT DEFAULT NULL",
                 "created_at": f"ALTER TABLE `{_TABLE_NAME}` ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
             }
 
@@ -190,6 +193,11 @@ def ensure_table() -> None:
                 if column not in existing:
                     cur.execute(sql)
 
+            cur.execute(f"CREATE TABLE IF NOT EXISTS `{_TABLE_NAME}_state` (id INT PRIMARY KEY, layout MEDIUMTEXT NOT NULL) ENGINE=InnoDB")
+            cur.execute(f"""CREATE TABLE IF NOT EXISTS `{_TABLE_NAME}_inputs` (
+                card_id INT NOT NULL, owner VARCHAR(64) NOT NULL, sequence BIGINT NOT NULL DEFAULT 0,
+                held_until DOUBLE NOT NULL DEFAULT 0, taps INT NOT NULL DEFAULT 0,
+                PRIMARY KEY(card_id,owner)) ENGINE=InnoDB""")
             conn.commit()
         finally:
             conn.close()
@@ -218,7 +226,8 @@ def clear() -> None:
         conn = _connect()
         try:
             cur = conn.cursor()
-            cur.execute(f"TRUNCATE TABLE `{_TABLE_NAME}`")
+            cur.execute(f"DELETE FROM `{_TABLE_NAME}`")
+            cur.execute(f"DELETE FROM `{_TABLE_NAME}_inputs`")
             conn.commit()
         finally:
             conn.close()
@@ -382,6 +391,8 @@ class Card:
         y_axis_label: Optional[str] = None,
         *,
         auto_delete: bool = True,
+        button_mode: str = "latch",
+        step: Union[int, float] = 1,
     ) -> None:
         ensure_table()
 
@@ -407,6 +418,11 @@ class Card:
         self.x_axis_label = _normalize_axis_label(x_axis_label)
         self.y_axis_label = _normalize_axis_label(y_axis_label)
         self.auto_delete = auto_delete
+        if button_mode not in {"latch", "momentary"}:
+            raise ValueError("button_mode must be latch or momentary")
+        if not isinstance(step, (int, float)) or not 0.000001 <= step <= 1_000_000_000:
+            raise ValueError("step must be between 0.000001 and 1000000000")
+        self.input_options = {"button_mode": button_mode, "step": step}
 
         self._insert()
 
@@ -421,9 +437,9 @@ class Card:
                         (type, title, color, min_value, max_value, value, description,
                          font_size, font_name, horizontal_alignment, vertical_alignment,
                          column_span, height_multiplier, y_padding_percent,
-                         x_axis_label, y_axis_label)
+                         x_axis_label, y_axis_label, input_options)
                     VALUES
-                        (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
                     (
                         self.type,
@@ -442,6 +458,7 @@ class Card:
                         self.y_padding_percent,
                         self.x_axis_label,
                         self.y_axis_label,
+                        json.dumps(self.input_options),
                     ),
                 )
                 conn.commit()
@@ -471,7 +488,7 @@ class Card:
                     SELECT id, type, title, color, min_value, max_value, value, description,
                            font_size, font_name, horizontal_alignment, vertical_alignment,
                            column_span, height_multiplier, y_padding_percent,
-                           x_axis_label, y_axis_label
+                           x_axis_label, y_axis_label, input_options
                     FROM `{_TABLE_NAME}`
                     WHERE id = %s
                     LIMIT 1
@@ -483,6 +500,7 @@ class Card:
                 if not row:
                     return False
 
+                self.input_options = json.loads(row.get("input_options") or "{}")
                 self.type = row["type"]
                 self.title = row["title"]
                 self.color = row["color"]
@@ -559,7 +577,8 @@ class Card:
                         height_multiplier = %s,
                         y_padding_percent = %s,
                         x_axis_label = %s,
-                        y_axis_label = %s
+                        y_axis_label = %s,
+                        input_options = %s
                     WHERE id = %s
                     """,
                     (
@@ -579,10 +598,45 @@ class Card:
                         self.y_padding_percent,
                         self.x_axis_label,
                         self.y_axis_label,
+                        json.dumps(self.input_options),
                         self.id,
                     ),
                 )
                 conn.commit()
+            finally:
+                conn.close()
+
+    def pressed(self) -> bool:
+        """Read a momentary button; stale browser holds expire after 1.5 seconds."""
+        if self.type != "button" or self.input_options.get("button_mode") != "momentary":
+            raise ValueError("pressed() requires a momentary button")
+        with _LOCK:
+            conn = _connect()
+            try:
+                cur = conn.cursor()
+                cur.execute(f"SELECT MAX(held_until) FROM `{_TABLE_NAME}_inputs` WHERE card_id=%s", (self.id,))
+                row = cur.fetchone()
+                return bool(row and row[0] and row[0] > time.time())
+            finally:
+                conn.close()
+
+    def clicked(self) -> bool:
+        """Atomically consume one queued tap, including taps between program reads."""
+        if self.type != "button" or self.input_options.get("button_mode") != "momentary":
+            raise ValueError("clicked() requires a momentary button")
+        with _LOCK:
+            conn = _connect()
+            try:
+                cur = conn.cursor()
+                cur.execute(f"SELECT owner FROM `{_TABLE_NAME}_inputs` WHERE card_id=%s AND taps>0 LIMIT 1 FOR UPDATE", (self.id,))
+                row = cur.fetchone()
+                if row:
+                    cur.execute(f"UPDATE `{_TABLE_NAME}_inputs` SET taps=taps-1 WHERE card_id=%s AND owner=%s", (self.id,row[0]))
+                conn.commit()
+                return bool(row)
+            except Exception:
+                conn.rollback()
+                raise
             finally:
                 conn.close()
 
@@ -666,3 +720,47 @@ class Card:
 
 # Optional lowercase alias if preferred.
 card = Card
+
+
+def save_project(path: Union[str, Path], *, program_path: Optional[Union[str, Path]] = None) -> None:
+    """Save cards, values and shared layout, optionally bundling a Python source file.
+
+    Call after creating the dashboard. The source is stored as text, never executed.
+    """
+    import urllib.request
+    with urllib.request.urlopen('http://127.0.0.1/dashboard/cards.php?action=export', timeout=10) as response:
+        result = json.load(response)
+    if not result.get('ok'):
+        raise RuntimeError(result.get('error', 'Cannot export dashboard'))
+    snapshot = result['dashboard']
+    if program_path is not None:
+        snapshot['program'] = Path(program_path).read_text(encoding='utf-8')
+    encoded = json.dumps(snapshot, ensure_ascii=False, indent=2)
+    if len(encoded.encode('utf-8')) > 2097152:
+        raise ValueError('Dashboard project exceeds 2 MB')
+    target = Path(path)
+    temporary = target.with_name(target.name + '.tmp')
+    temporary.write_text(encoded, encoding='utf-8')
+    temporary.replace(target)
+
+
+def load_project(path: Union[str, Path]) -> Optional[str]:
+    """Restore cards/layout and return any bundled Python source without running it.
+
+    Stop the old program first. Restored cards persist independently of Card objects.
+    """
+    import urllib.request
+    target = Path(path)
+    if target.stat().st_size > 2097152:
+        raise ValueError('Dashboard project exceeds 2 MB')
+    snapshot = json.loads(target.read_text(encoding='utf-8'))
+    if not isinstance(snapshot, dict) or (snapshot.get('program') is not None and not isinstance(snapshot['program'], str)):
+        raise ValueError('Invalid dashboard project')
+    payload = json.dumps({'dashboard': snapshot}).encode('utf-8')
+    request = urllib.request.Request('http://127.0.0.1/dashboard/cards.php?action=restore', data=payload,
+                                     headers={'Content-Type': 'application/json'}, method='POST')
+    with urllib.request.urlopen(request, timeout=10) as response:
+        result = json.load(response)
+    if not result.get('ok'):
+        raise RuntimeError(result.get('error', 'Cannot restore dashboard'))
+    return snapshot.get('program')

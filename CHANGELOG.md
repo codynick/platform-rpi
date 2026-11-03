@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.12.0-dashboard-tools - 2026-11-03
+
+- Add drag/resize, arrow-key controls, grid snapping, lock/reset and Pi-persisted shared layouts.
+- Retain all eleven card types and legacy latch buttons; add opt-in momentary holds, queued taps, owner isolation and 1.5-second hold expiry.
+- Add stepped sliders, initial values and direct numeric entry with server-side clamping/snapping.
+- Add validated transactional dashboard snapshots, native Python source bundles and dashboard inclusion in named/transferred Blockly designs. Restores release buttons and discard pending taps.
+- Preserve card DOM on value-only updates and retain gauge animation; redraw charts on size changes.
+- Add PHP/MySQL/native Python and Chrome integration regressions. Physical Pi installation/reboot and hardware acceptance remain pending.
+- Preserve selected rollback-manifest overrides when sealing the new updater; published older tags remain unchanged.
+- Preserve existing technology, firmware, AI models, student files, database records and network behavior. Additive database metadata remains on application downgrade.
+
 ## 0.11.1-repository-migration - 2026-10-26
 
 - Move active installer, source, release-asset and documented setup URLs to codynick/platform-rpi.

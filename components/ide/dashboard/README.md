@@ -2,6 +2,72 @@
 
 A small on-device PHP/MySQL dashboard for local IoT panels.
 
+## Interactive tools (0.12.0)
+
+Use **Edit layout** to expose Move and Resize handles. Drag with a mouse/touch,
+or focus a handle and press arrow keys. Positions and dimensions snap to a grid.
+Escape cancels a drag; **Lock layout** hides handles; **Reset layout** restores
+defaults. Layouts are stored on the Pi and appear in other browsers on their next
+refresh. Card identity uses type, title and occurrence, so recreating the same named
+cards in the same order retains their layout. Renaming a card gives it a new identity.
+
+All eleven original types remain supported. Legacy `button` cards keep the
+click-and-reset behavior. Opt into momentary behavior explicitly:
+
+```python
+import Dashboard
+
+hold = Dashboard.Card("button", "Hold", value=False, button_mode="momentary")
+level = Dashboard.Card("slider", "Level", min_value=0, max_value=100,
+                       value=50, step=5)
+
+is_held = hold.pressed()       # does not consume a tap
+was_clicked = hold.clicked()  # consumes one queued tap
+level.sync()
+print(is_held, was_clicked, level.value)
+```
+
+Momentary buttons support mouse, touch, Space and Enter. Each view owns its own
+hold. Blur, cancellation and closing release it; if the browser disappears, holds
+expire after 1.5 seconds. A view renews a live hold every 400 ms. Up to 1,000 taps
+are queued per view/button. Editor Run/Stop clears holds and pending taps. If the
+database is unavailable during that reset, the editor logs the failure and hold
+expiry still applies. Use `pressed()` and `clicked()` for the momentary mode;
+the ordinary `sync()` API remains appropriate for legacy buttons and other cards.
+
+Sliders have both a range control and numeric entry. Enter or leaving the numeric
+field commits the value. Values snap to steps from the minimum and clamp to the
+last step at or below the maximum. `value=` is the initial value. Existing sliders
+default to step 1, matching their previous browser behavior.
+
+**Download dashboard** exports cards, values and shared layout as JSON.
+**Upload dashboard** validates the whole file before replacing data in a database
+transaction; malformed files leave the existing dashboard unchanged. Stop the
+running program before loading, because a running program can change restored
+cards. Buttons restore released and pending taps are never transferred.
+Named Blockly designs and downloaded `.codynick` designs also carry a dashboard
+snapshot. Old designs without a snapshot leave the current dashboard unchanged.
+
+For native Python source bundles:
+
+```python
+# Save after setting up cards. Use a writable student folder, outside managed examples.
+Dashboard.save_project("my_dashboard.json", program_path="my_program.py")
+
+# Restore in a separate stopped-program workflow. This does not execute saved code.
+saved_source = Dashboard.load_project("my_dashboard.json")
+```
+
+The Python functions call the existing local dashboard endpoint. Source text is
+optional, returned by `load_project`, and never written over a program automatically.
+Snapshots are limited to 2 MB and 500 cards. Existing Card handles refer to their
+original rows; after restoring, create a fresh program/session rather than reusing
+old handles. Restored cards persist until explicitly cleared or replaced.
+
+The update adds `input_options` plus `iot_cards_state` and `iot_cards_inputs`
+tables (using the configured card-table prefix). It retains existing cards and
+configuration. Application downgrades leave this additive metadata in the database.
+
 The dashboard is rendered entirely through AJAX. This means changes to card type, title, color, description, min/max values, and current value are all reflected in the browser on the next refresh cycle.
 
 ## Files
@@ -56,13 +122,13 @@ CREATE TABLE iot_cards (
 );
 ```
 
-Cards are displayed in this order:
+Without a saved interactive layout, cards are placed in this order:
 
 ```sql
 ORDER BY id ASC
 ```
 
-So the display order is the database insertion order unless you manually change IDs or later add a custom order column.
+Saved positions override this initial insertion order.
 
 ## Typography and alignment
 

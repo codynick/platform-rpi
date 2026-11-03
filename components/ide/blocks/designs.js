@@ -24,8 +24,9 @@ const NamedDesigns = (()=>{
     const name=input().value.trim();
     if(!name){input().focus();toast('Enter a design name first.',true);return;}
     input().value=name;
-    const snapshot=currentWorkspaceJson();
     busy=true;
+    const snapshot=currentWorkspaceJson();
+    try { snapshot.codynick_dashboard=await dashboardProjectSnapshot(); } catch(error) {busy=false;toast(error.message,true);return;}
     try {
       let result;
       try {result=await request('save',{name,workspace:snapshot});}
@@ -33,7 +34,8 @@ const NamedDesigns = (()=>{
         if(!error.exists||!confirm('Overwrite the saved design "'+name+'"?')) {if(error.exists)return;throw error;}
         result=await request('save',{name,workspace:snapshot,overwrite:true});
       }
-      baseline=JSON.stringify(snapshot);
+      const {codynick_dashboard,...workspaceSnapshot}=snapshot;
+      baseline=JSON.stringify(workspaceSnapshot);
       await saveWorkspaceNow(true);
       toast('Design saved: '+result.name);
     }catch(error){toast(error.message,true);}
@@ -63,9 +65,11 @@ const NamedDesigns = (()=>{
     try {
       const result=await request('load&name='+encodeURIComponent(name));
       if(!confirmReplace())return;
+      if(result.workspace.codynick_dashboard && !confirm('Restore this design and its dashboard? Stop the running program first.'))return;
       const previous=currentWorkspaceJson();
       try {
         Blockly.serialization.workspaces.load(result.workspace,workspace);
+        if(result.workspace.codynick_dashboard) await restoreDashboardProject(result.workspace.codynick_dashboard);
         input().value=result.name;
       }catch(error){Blockly.serialization.workspaces.load(previous,workspace);throw error;}
       baseline=fingerprint();

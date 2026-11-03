@@ -402,6 +402,7 @@ body {
     .card-span-2, .card-span-3, .card-span-4 { grid-column: span 1; }
 }
 </style>
+<link rel="stylesheet" href="enhancements.css?v=0.12.0">
 <link rel="icon" type="image/x-icon" href="/assets/favicon.ico"><link rel="stylesheet" href="/assets/tool-navigation.css"></head>
 <body>
 
@@ -418,11 +419,20 @@ body {
 </header>
 
 <main class="container">
+    <div class="dashboard-toolbar">
+        <button id="editLayout" type="button" aria-pressed="false">Edit layout</button>
+        <button id="resetLayout" type="button">Reset layout</button>
+        <button id="downloadDashboard" type="button">Download dashboard</button>
+        <label class="dashboard-upload">Upload dashboard<input id="uploadDashboard" type="file" accept=".json"></label>
+        <span id="dashboardStatus" role="status" aria-live="polite"></span>
+    </div>
     <div class="grid" id="dashboardGrid">
         <div class="empty-state">Loading dashboard...</div>
     </div>
 </main>
 
+<script src="layout-model.js?v=0.12.0"></script>
+<script src="enhancements.js?v=0.12.0"></script>
 <script>
 const POLL_INTERVAL_MS = <?= (int)$poll_interval_ms ?>;
 const grid = document.getElementById('dashboardGrid');
@@ -620,6 +630,9 @@ function renderCardBody(card) {
         return `<div class="dash-info" data-role="info">${escapeHtml(value)}</div>`;
     }
 
+    if (type === 'button' && card.input_options?.button_mode === 'momentary') {
+        return `<button class="dash-button momentary-button" data-role="button" aria-label="${escapeHtml(card.title)}" aria-pressed="false"></button><span data-role="button-state" class="small-note">Released</span>`;
+    }
     if (type === 'button') {
         const pressed = String(value).toLowerCase().trim() === 'true';
         return `<button class="dash-button" data-role="button" ${pressed ? 'disabled' : ''}>${escapeHtml(card.title || 'Button')}</button>`;
@@ -637,7 +650,8 @@ function renderCardBody(card) {
 
     if (type === 'slider') {
         return `
-            <input class="dash-slider" data-role="input" type="range" min="${escapeHtml(min)}" max="${escapeHtml(max)}" value="${escapeHtml(value)}">
+            <input class="dash-slider" data-role="input" type="range" min="${escapeHtml(min)}" max="${escapeHtml(max)}" step="${escapeHtml(card.input_options?.step || 1)}" value="${escapeHtml(value)}" aria-label="${escapeHtml(card.title)}">
+            <input class="dash-number" data-role="number" type="number" min="${escapeHtml(min)}" max="${escapeHtml(max)}" step="${escapeHtml(card.input_options?.step || 1)}" value="${escapeHtml(value)}" aria-label="${escapeHtml(card.title)} numeric value">
             <div class="value-text"><span data-role="value"></span></div>
             <div class="small-note"><span data-role="min"></span> to <span data-role="max"></span></div>
         `;
@@ -671,59 +685,37 @@ function renderCardBody(card) {
     return `<div class="unknown-card">Unknown card type</div>`;
 }
 
-function renderAllCards(cards) {
+const cardMetadata = new Map(), cardValues = new Map();
+function renderAllCards(cards, layout) {
+    const changed=[];
     latestCards = cards;
-
+    DashboardTools.update(cards, layout);
+    const ids = new Set(cards.map(card => String(card.id)));
+    for (const element of grid.querySelectorAll('.card')) {
+        if (!ids.has(element.dataset.cardId)) {element.remove();cardMetadata.delete(element.dataset.cardId);cardValues.delete(element.dataset.cardId);}
+    }
     if (!cards.length) {
-        grid.innerHTML = '<div class="empty-state">No cards found. Add rows to the iot_cards table to create dashboard cards.</div>';
-        firstLoadComplete = true;
-        return;
-    }
-
-    const focused = document.activeElement;
-    const focusedCardId = focused?.closest?.('.card')?.dataset?.cardId || null;
-    const focusedRole = focused?.dataset?.role || null;
-    const focusedType = focused?.closest?.('.card')?.dataset?.cardType || null;
-    const selectionStart = focused && typeof focused.selectionStart === 'number' ? focused.selectionStart : null;
-    const selectionEnd = focused && typeof focused.selectionEnd === 'number' ? focused.selectionEnd : null;
-    const scrollX = window.scrollX;
-    const scrollY = window.scrollY;
-
-    // If the user is typing in a textarea, keep the browser value as the source of truth.
-    // This prevents the backend/device from overwriting the field during the AJAX refresh cycle.
-    if (focusedCardId && focusedType === 'textarea' && focusedRole === 'input') {
-        editingTextareaValues[focusedCardId] = focused.value;
-        debounceSet(focusedCardId, focused.value, 100);
-    }
-
-    isRenderingCards = true;
-    grid.innerHTML = cards.map(renderCardShell).join('');
-    cards.forEach(updateCardValues);
-    attachEvents();
-
-    Object.keys(editingTextareaValues).forEach(id => {
-        const editedInput = document.querySelector(`[data-card-id="${CSS.escape(id)}"] [data-role="input"]`);
-        if (editedInput && normalizeType(editedInput.closest('.card')?.dataset?.cardType) === 'textarea') {
-            editedInput.value = editingTextareaValues[id];
-        }
-    });
-
-    if (focusedCardId && focusedRole) {
-        const replacement = document.querySelector(`[data-card-id="${CSS.escape(focusedCardId)}"] [data-role="${CSS.escape(focusedRole)}"]`);
-        if (replacement && replacement.tagName !== 'BUTTON') {
-            try { replacement.focus({ preventScroll: true }); } catch (e) { replacement.focus(); }
-            if (focusedType === 'textarea' && focusedRole === 'input' && editingTextareaValues[focusedCardId] !== undefined) {
-                replacement.value = editingTextareaValues[focusedCardId];
+        grid.innerHTML = '<div class="empty-state">No cards yet. Create cards in your program or upload a dashboard.</div>';
+    } else {
+        grid.querySelectorAll('.empty-state,.load-error').forEach(element => element.remove());
+        for (const card of cards) {
+            const id=String(card.id), {value,...metadata}=card, signature=JSON.stringify(metadata);
+            let element=grid.querySelector(`[data-card-id="${CSS.escape(id)}"]`);
+            if (!element || cardMetadata.get(id)!==signature) {
+                const template=document.createElement('template');template.innerHTML=renderCardShell(card).trim();
+                const replacement=template.content.firstElementChild;
+                if(element) element.replaceWith(replacement); else grid.appendChild(replacement);
+                element=replacement;cardMetadata.set(id,signature);cardValues.delete(id);
+                attachEvents(element);DashboardTools.decorate(element,card);
             }
-            if (selectionStart !== null && typeof replacement.setSelectionRange === 'function') {
-                replacement.setSelectionRange(selectionStart, selectionEnd);
-            }
+            const current=JSON.stringify(card.value);
+            if(cardValues.get(id)!==current) {updateCardValues(card);cardValues.set(id,current);changed.push(card);}
         }
     }
-
-    window.scrollTo(scrollX, scrollY);
-    isRenderingCards = false;
-    firstLoadComplete = true;
+    DashboardTools.update(cards, layout);
+    // Draw charts after their final grid size is known, without replacing DOM nodes.
+    requestAnimationFrame(()=>changed.filter(card=>['graph','bar','pie'].includes(card.type)).forEach(updateCardValues));
+    firstLoadComplete=true;
 }
 
 function updateCardValues(card) {
@@ -748,6 +740,8 @@ function updateCardValues(card) {
 
     if (type === 'gauge') updateGauge(cardEl, value, min, max);
 
+    if (type === 'button' && card.input_options?.button_mode === 'momentary') DashboardTools.updateButton(cardEl,card);
+
     if (type === 'textarea') {
         const input = cardEl.querySelector('[data-role="input"]');
         if (input) {
@@ -765,7 +759,7 @@ function updateCardValues(card) {
         if (info) info.textContent = value;
     }
 
-    if (type === 'button') {
+    if (type === 'button' && card.input_options?.button_mode !== 'momentary') {
         const button = cardEl.querySelector('[data-role="button"]');
         if (button) {
             button.textContent = card.title || 'Button';
@@ -796,6 +790,8 @@ function updateCardValues(card) {
             input.max = max;
             if (document.activeElement !== input) input.value = numeric(value, min);
         }
+        const number = cardEl.querySelector('[data-role="number"]');
+        if (number && document.activeElement !== number && document.activeElement !== input) number.value = numeric(value,min);
         if (valueEl) valueEl.textContent = numeric(value, min);
         if (minEl) minEl.textContent = min;
         if (maxEl) maxEl.textContent = max;
@@ -1272,8 +1268,8 @@ function drawTable(cardEl, rawValue) {
     `;
 }
 
-function attachEvents() {
-    document.querySelectorAll('.card').forEach(cardEl => {
+function attachEvents(root) {
+    [root].forEach(cardEl => {
         const id = cardEl.dataset.cardId;
         const type = normalizeType(cardEl.dataset.cardType);
 
@@ -1296,7 +1292,7 @@ function attachEvents() {
             }
         }
 
-        if (type === 'button') {
+        if (type === 'button' && latestCards.find(card=>String(card.id)===id)?.input_options?.button_mode !== 'momentary') {
             const button = cardEl.querySelector('[data-role="button"]');
             if (button) {
                 button.addEventListener('click', () => {
@@ -1320,38 +1316,33 @@ function attachEvents() {
             }
         }
 
-        if (type === 'slider') {
-            const input = cardEl.querySelector('[data-role="input"]');
-            const valueEl = cardEl.querySelector('[data-role="value"]');
-            if (input) {
-                input.addEventListener('input', () => {
-                    if (valueEl) valueEl.textContent = input.value;
-                    debounceSet(id, input.value);
-                });
-            }
-        }
+
     });
 }
 
+let polling=false;
 function pollState() {
-    fetch('cards.php?action=state', { cache: 'no-store' })
+    if(polling)return Promise.resolve();
+    polling=true;
+    return fetch('cards.php?action=state', { cache: 'no-store' })
         .then(response => response.json())
         .then(data => {
             if (!data.ok || !Array.isArray(data.cards)) {
                 throw new Error(data.error || 'Invalid API response');
             }
 
-            // Because title/color/description/type may also change, the entire dashboard is AJAX-rendered.
-            renderAllCards(data.cards);
+            // Update existing cards in place; replace only cards whose configuration changed.
+            renderAllCards(data.cards, data.layout);
         })
         .catch(error => {
             if (!firstLoadComplete) {
                 grid.innerHTML = `<div class="load-error">Unable to load dashboard: ${escapeHtml(error.message)}</div>`;
             }
             console.error(error);
-        });
+        }).finally(()=>{polling=false;});
 }
 
+DashboardTools.initialize();
 pollState();
 setInterval(pollState, POLL_INTERVAL_MS);
 </script>

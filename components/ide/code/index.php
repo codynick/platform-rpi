@@ -29,6 +29,8 @@ function control_script(string $action): void {
     fclose($socket);
     $result = is_string($reply) ? json_decode($reply, true) : null;
     if (!is_array($result) || empty($result['ok'])) fail('Script control failed: ' . ($result['error'] ?? 'No response from control service.'), 500);
+    require_once __DIR__ . '/../dashboard/reset-inputs.php';
+    try { dashboard_reset_inputs(); } catch (Throwable $error) { error_log('Dashboard input reset: ' . $error->getMessage()); }
 }
 function ensure_paths(): void {
     if (!is_dir(WORKING_DIR)) @mkdir(WORKING_DIR, 0775, true);

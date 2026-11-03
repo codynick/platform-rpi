@@ -62,6 +62,8 @@ class ReleaseSelectionTests(unittest.TestCase):
             installer.select_target({'version': '0.9.10', 'tag': 'main'})
 
     def test_maintainer_selector_keeps_updater_and_network_pins(self):
+        bootstrap = (ROOT / 'bootstrap/codynick-apps.sh').read_text()
+        self.assertIn('TARGET_MANIFEST_SHA256="${CODYNICK_TARGET_MANIFEST_SHA256:-$MANIFEST_SHA256}"', bootstrap)
         original = (ROOT / 'setup.sh').read_text()
         self.assertIn('CODYNICK_TARGET_MANIFEST_SHA256="$TARGET_MANIFEST_SHA256"', original)
         tag, checksum = selector.published_manifest('0.9.10')

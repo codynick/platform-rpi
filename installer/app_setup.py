@@ -14,13 +14,14 @@ import tempfile
 import time
 import urllib.request
 
-VERSION = "0.11.1"
-TAG = "v0.11.1-repository-migration"
+VERSION = "0.12.0"
+TAG = "v0.12.0-dashboard-tools"
 ENGINE_VERSION = VERSION
 ENGINE_TAG = TAG
-RELEASE_DATE = "2026-10-26"
+RELEASE_DATE = "2026-11-03"
 RELEASE_DIRECTORY = Path(__file__).resolve().parent
 TARGET_RELEASES = {
+    "0.12.0": ("v0.12.0-dashboard-tools", "2026-11-03"),
     "0.11.0": ("v0.11.0-sprite-designs", "2026-10-21"),
     "0.11.1": ("v0.11.1-repository-migration", "2026-10-26"),
     "0.10.3": ("v0.10.3-script-controls", "2026-10-21"),

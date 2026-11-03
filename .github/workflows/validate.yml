@@ -10,7 +10,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install test dependencies
-        run: sudo apt-get update && sudo apt-get install -y python3-yaml php-cli acl
+        run: sudo apt-get update && sudo apt-get install -y python3-yaml php-cli php-mysql mariadb-server python3-venv acl
       - name: Unit tests
         run: /usr/bin/python3 -m unittest discover -s tests -v
       - name: Shell syntax
@@ -20,6 +20,18 @@ jobs:
           bash -n setup.sh
       - name: ANSI terminal regression
         run: node tests/test_ansi.cjs
+      - name: Dashboard graph regression
+        run: node tests/test_dashboard_graph.cjs
+      - name: Dashboard PHP/MySQL and native Python integration
+        env:
+          MYSQL_TEST_USER: dashboard_test
+          MYSQL_TEST_PASSWORD: dashboard-test-local
+        run: |
+          sudo systemctl start mariadb
+          sudo mariadb -e "CREATE DATABASE IF NOT EXISTS dashboard_upgrade_test; CREATE USER IF NOT EXISTS 'dashboard_test'@'127.0.0.1' IDENTIFIED BY 'dashboard-test-local'; GRANT ALL ON dashboard_upgrade_test.* TO 'dashboard_test'@'127.0.0.1';"
+          python3 -m venv /tmp/dashboard-tests
+          /tmp/dashboard-tests/bin/pip install mysql-connector-python==26.10.0
+          /tmp/dashboard-tests/bin/python tests/dashboard_integration.py
       - name: Real web-user permission regression
         run: |
           sudo groupadd --force codynick-media

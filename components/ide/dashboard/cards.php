@@ -4,10 +4,12 @@
    ============================================================ */
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/features.php';
 
 function json_response($payload, int $status = 200): void {
     http_response_code($status);
     header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store');
     echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
@@ -40,6 +42,7 @@ function db(): PDO {
     }
 
     ensure_schema($pdo);
+    dashboard_schema($pdo);
     return $pdo;
 }
 
@@ -338,7 +341,7 @@ function get_cards(): array {
     global $cards_table;
     $pdo = db();
 
-    $stmt = $pdo->query("SELECT id, type, title, color, min_value, max_value, value, description, font_size, font_name, horizontal_alignment, vertical_alignment, column_span, height_multiplier, y_padding_percent, x_axis_label, y_axis_label FROM `{$cards_table}` ORDER BY id ASC");
+    $stmt = $pdo->query("SELECT id, type, title, color, min_value, max_value, value, description, font_size, font_name, horizontal_alignment, vertical_alignment, column_span, height_multiplier, y_padding_percent, x_axis_label, y_axis_label, input_options FROM `{$cards_table}` ORDER BY id ASC");
     $cards = $stmt->fetchAll();
 
     foreach ($cards as &$card) {
@@ -371,6 +374,20 @@ function set_card_value(int $id, string $value): void {
     global $cards_table;
     $pdo = db();
 
+    $read=$pdo->prepare("SELECT type,min_value,max_value,input_options FROM `{$cards_table}` WHERE id=?");
+    $read->execute([$id]);$card=$read->fetch();
+    if (!$card) throw new InvalidArgumentException('Card no longer exists.');
+    $options=dashboard_options($card['input_options']);
+    if ($card['type']==='button' && $options['button_mode']==='momentary') throw new InvalidArgumentException('Use momentary button events.');
+    if ($card['type']==='slider') {
+        if (!is_numeric($value) || !is_finite((float)$value)) throw new InvalidArgumentException('Slider value must be numeric.');
+        $min=is_numeric($card['min_value'])?(float)$card['min_value']:0;
+        $max=is_numeric($card['max_value'])?(float)$card['max_value']:100;
+        if ($max<=$min) throw new InvalidArgumentException('Invalid slider range.');
+        $step=$options['step'];$tick=max(0,min(floor(($max-$min)/$step+1e-8),round(((float)$value-$min)/$step)));
+        $value=(string)round($min+$tick*$step,10);
+    }
+
     $stmt = $pdo->prepare("UPDATE `{$cards_table}` SET `value` = :value WHERE `id` = :id");
     $stmt->execute([
         ':value' => $value,
@@ -379,12 +396,15 @@ function set_card_value(int $id, string $value): void {
 }
 
 $action = $_GET['action'] ?? '';
+if (!defined('CODYNICK_DASHBOARD_LIBRARY')) dashboard_feature_action($action);
+if (defined('CODYNICK_DASHBOARD_LIBRARY')) return;
 
 if ($action === 'state') {
     try {
         json_response([
             'ok' => true,
-            'cards' => get_cards(),
+            'cards' => dashboard_enrich(get_cards()),
+            'layout' => dashboard_get_layout(),
         ]);
     } catch (Throwable $e) {
         json_response([
