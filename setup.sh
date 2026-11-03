@@ -2,12 +2,12 @@
 # Stable public entry point. Every published update pins immutable stage scripts.
 set -euo pipefail
 umask 022
-VERSION="0.12.0"
-TARGET_VERSION="0.12.0"
-TARGET_TAG="v0.12.0-dashboard-tools"
-TARGET_MANIFEST_SHA256="c106bc78b85fa52c7f8a92f7cc88e144558bbeb782e9bb835cb9d459946ae395"
-NETWORK_SHA256="f702fc8eeb6c17c32f5db2adbfc8e95055bac9cbb7bb808c9f99218612edca3f"
-APPS_SHA256="bac4a8402152581f3cc32ff99143f768ee6523674042c0b05163ce739a576763"
+VERSION="0.12.1"
+TARGET_VERSION="0.12.1"
+TARGET_TAG="v0.12.1-dashboard-handles"
+TARGET_MANIFEST_SHA256="12c5526ad3e964ea0df7778a3c5731d60098f09995d876bca9d16868d52c20af"
+NETWORK_SHA256="fe2bff8486993898c74761e4de1326c6083c959d7b119e52d6776d80b730442d"
+APPS_SHA256="9277113090fb274d8cb839bf11ecd946c1f677649051460deb7d8743e436fd09"
 [[ $EUID -eq 0 ]] || { echo 'Run this setup command using sudo.'; exit 1; }
 echo "CodyNick setup ${TARGET_VERSION}: install / repair / upgrade / downgrade"
 exec 7>/run/lock/codynick-setup-entry.lock
@@ -25,7 +25,7 @@ p=pathlib.Path('/var/lib/codynick/network-setup.json')
 print(json.loads(p.read_text()).get('stage','') if p.exists() else '')
 PY
 }
-fetch network.sh https://raw.githubusercontent.com/codynick/platform-rpi/v0.12.0-dashboard-tools/bootstrap/codynick-setup.sh "$NETWORK_SHA256"
+fetch network.sh https://raw.githubusercontent.com/codynick/platform-rpi/v0.12.1-dashboard-handles/bootstrap/codynick-setup.sh "$NETWORK_SHA256"
 state=$(stage)
 initial_state=$state
 if [[ "$state" != network-ready ]]; then
@@ -50,7 +50,7 @@ for service in ssh codynick-ap codynick-dhcp codynick-nat; do
         systemctl start "$service" || { echo "Network service $service needs recovery; application installation was not started."; exit 1; }
     fi
 done
-fetch apps.sh https://raw.githubusercontent.com/codynick/platform-rpi/v0.12.0-dashboard-tools/bootstrap/codynick-apps.sh "$APPS_SHA256"
+fetch apps.sh https://raw.githubusercontent.com/codynick/platform-rpi/v0.12.1-dashboard-handles/bootstrap/codynick-apps.sh "$APPS_SHA256"
 CODYNICK_TARGET_VERSION="$TARGET_VERSION" CODYNICK_TARGET_TAG="$TARGET_TAG" \
     CODYNICK_TARGET_MANIFEST_SHA256="$TARGET_MANIFEST_SHA256" bash "$temp/apps.sh"
 echo 'Progress follows from the persistent CodyNick log. Ctrl+C closes this display only.'

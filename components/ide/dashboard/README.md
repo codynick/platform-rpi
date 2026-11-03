@@ -2,10 +2,11 @@
 
 A small on-device PHP/MySQL dashboard for local IoT panels.
 
-## Interactive tools (0.12.0)
+## Interactive tools (0.12.1)
 
-Use **Edit layout** to expose Move and Resize handles. Drag with a mouse/touch,
-or focus a handle and press arrow keys. Positions and dimensions snap to a grid.
+Use **Edit layout**, then drag a card header to move it or drag the grip at its
+bottom-right corner to resize it. Use mouse/touch, or focus a header/corner and
+press arrow keys. Positions and dimensions snap to a grid.
 Escape cancels a drag; **Lock layout** hides handles; **Reset layout** restores
 defaults. Layouts are stored on the Pi and appear in other browsers on their next
 refresh. Card identity uses type, title and occurrence, so recreating the same named
@@ -474,3 +475,11 @@ To add a new card type:
 6. Add event handling in `attachEvents()` if the card sends values back to the server.
 
 This structure keeps the backend and frontend simple while allowing future expansion.
+
+### Complete feature test
+
+Run `CodyNick examples/dashboard/dashboard_feature_test.py` in the Python IDE.
+It replaces the current dashboard with all eleven original card types, a momentary
+button and a snapshot-save button. It needs no hardware. Type messages, toggle
+Power, hold/tap the momentary button and move the stepped slider; outputs update
+live. Save snapshots outside the managed examples folder. Stop before restoring.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.1-dashboard-handles - 2026-11-03
+
+- Move cards by dragging their headers and resize from a bottom-right corner grip, without a separate Move/Resize toolbar.
+- Keep Edit/Lock layout, arrow-key movement/resizing, Escape cancellation, saved layouts and touch support. Hide/disable resize grips and header focus while locked; prevent dashboard input while editing.
+- Add dashboard/dashboard_feature_test.py covering all eleven card types, momentary hold/tap controls, stepped sliders, live charts and source/dashboard snapshot saving.
+- Cache-bust updated dashboard assets, retain 0.12.0 upgrade/rollback support and reseal a new immutable release. No underlying technology changes.
+- Add browser checks for header/corner dragging, corner placement, cancellation and locked behavior. Physical Pi acceptance remains pending.
+
 ## 0.12.0-dashboard-tools - 2026-11-03
 
 - Add drag/resize, arrow-key controls, grid snapping, lock/reset and Pi-persisted shared layouts.

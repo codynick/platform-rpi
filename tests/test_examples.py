@@ -11,6 +11,49 @@ EXAMPLES = Path(__file__).resolve().parents[1] / 'components/examples'
 
 
 class ExampleTests(unittest.TestCase):
+    def test_dashboard_feature_example_updates_cards_and_saves_source_bundle(self):
+        cards = {}
+
+        class FakeCard:
+            def __init__(self, kind, title, **options):
+                self.type, self.title, self.options = kind, title, options
+                self.value = options.get('value')
+                self.remaining_taps = 1 if title == 'Hold or tap' else 0
+                cards[title] = self
+
+            def sync(self):
+                if self.title == 'Save test snapshot':
+                    self.value = 'true'
+
+            def set(self, value):
+                self.value = value
+
+            def pressed(self):
+                return True
+
+            def clicked(self):
+                result = self.remaining_taps > 0
+                self.remaining_taps = max(0, self.remaining_taps - 1)
+                return result
+
+        dashboard = types.SimpleNamespace(Card=FakeCard, clear=MagicMock(), save_project=MagicMock())
+        clock = types.SimpleNamespace(monotonic=MagicMock(side_effect=[0, 1.2]),
+                                      sleep=MagicMock(side_effect=KeyboardInterrupt))
+        path = EXAMPLES / 'dashboard/dashboard_feature_test.py'
+        with patch.dict('sys.modules', {'Dashboard': dashboard, 'time': clock}), contextlib.redirect_stdout(io.StringIO()):
+            runpy.run_path(str(path), run_name='__main__')
+        self.assertEqual({card.type for card in cards.values()},
+                         {'led', 'gauge', 'textarea', 'info', 'button', 'switch', 'slider', 'graph', 'bar', 'pie', 'table'})
+        self.assertEqual(cards['Level'].options['step'], 5)
+        self.assertEqual(cards['Hold or tap'].options['button_mode'], 'momentary')
+        self.assertEqual(cards['Readings'].value['Taps'], 1)
+        self.assertEqual(cards['Readings'].value['Message'], 'Hello CodyNick')
+        self.assertTrue(cards['Enabled'].value)
+        self.assertEqual(len(cards['Level history'].value), 2)
+        self.assertFalse(cards['Save test snapshot'].value)
+        dashboard.save_project.assert_called_once_with(
+            Path('/home/client/userfiles/dashboard_feature_test.json'), program_path=str(path))
+
     def test_local_ai_example_loads_once_and_answers_editable_question(self):
         ai = MagicMock()
         ai.load_llm.return_value = {"loading_seconds": 2.5}

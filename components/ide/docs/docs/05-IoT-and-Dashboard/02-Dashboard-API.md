@@ -189,8 +189,8 @@ sets its initial value. Numeric entry appears beside the range control; Enter or
 leaving the field commits it. Browser and server clamp/snap values consistently.
 
 The dashboard's Edit layout, Lock layout and Reset layout controls manage shared
-positions and sizes saved on the Pi. Move/Resize handles support dragging and
-arrow keys; Escape cancels an unfinished drag. Download/Upload dashboard transfers
+positions and sizes saved on the Pi. Drag card headers to move and bottom-right corner grips to resize. Headers/grips
+also support arrow keys; Escape cancels an unfinished drag. Download/Upload dashboard transfers
 card configuration, values and layout. Named/transferred Blockly designs include
 the dashboard too. Stop a running program before loading a snapshot.
 

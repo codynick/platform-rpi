@@ -4,10 +4,13 @@
 #dashboardStatus { font-size:13px; color:#475569; }
 #dashboardGrid { grid-auto-rows:96px; gap:18px; }
 .card { position:relative; }
-.layout-handles { display:none; gap:6px; margin-bottom:8px; }
-.layout-handles button { touch-action:none; cursor:move; font:inherit; font-size:12px; border:1px dashed #64748b; background:#f1f5f9; border-radius:4px; padding:3px 8px; }
-.layout-handles [data-layout=resize] { cursor:nwse-resize; }
-.editing-layout .layout-handles { display:flex; }
+.editing-layout .card-title { touch-action:none; cursor:grab; user-select:none; border-bottom:1px dashed #94a3b8; padding-bottom:6px; }
+.editing-layout .card-title:active { cursor:grabbing; }
+.editing-layout .card-title:focus-visible,.card-resize-handle:focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
+.card-resize-handle { display:none; position:absolute; right:4px; bottom:4px; width:30px; height:30px; padding:0; border:0; border-radius:4px; background:transparent; cursor:nwse-resize; touch-action:none; }
+.card-resize-handle::after { content:""; position:absolute; right:5px; bottom:5px; width:15px; height:15px; background:repeating-linear-gradient(135deg,transparent 0 3px,#64748b 3px 5px,transparent 5px 7px); clip-path:polygon(100% 0,100% 100%,0 100%); }
+.editing-layout .card-resize-handle { display:block; }
+@media(pointer:coarse){.card-resize-handle{width:44px;height:44px;}}
 .editing-layout .card-body { pointer-events:none; opacity:.7; }
 .dash-number { width:100%; max-width:150px; padding:6px; font:inherit; border:1px solid #cbd5e1; border-radius:6px; text-align:center; }
 .card .momentary-button { touch-action:none; width:78px; min-height:78px; border:8px solid #cbd5e1; border-radius:50%; background:radial-gradient(circle at 35% 25%,#ff7878,#dc2626 65%); box-shadow:0 5px 0 #991b1b,0 8px 12px #0003; font-size:0; }

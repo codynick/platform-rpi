@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 umask 022
-VERSION="0.12.0"
+VERSION="0.12.1"
 VISION_SHA256="0d28804e08194680ebc149d5b8caadcde46ceb2b8f5366ac7240f1999791c42a"
 SPEECH_SHA256="ac5f4cb76405a26ec3b9f09b82fd7143f3306dfc0f6db9077f9b5e744e9314a7"
 OCR_SHA256="881e4a795e30a524176a14f7ea5e9a7e942e4b53d38e66e10c7fd55267f897bc"
 TTS_SHA256="6567eb8cf701d468016895e93cd44d4cd8831e2b03c9b3266d6272c319527065"
 LLM_SHA256="d22acd8c728ffd5b84d9bc9d7e76f4892648e6fa057e8fb78a238dab4602d2ed"
-TAG="v0.12.0-dashboard-tools"
-HELPER_SHA256="6efadc46f757e32d7a758c57b8ccf0499572d2d14a970fe86833de07fce76716"
-MANIFEST_SHA256="c106bc78b85fa52c7f8a92f7cc88e144558bbeb782e9bb835cb9d459946ae395"
-VERSION_STATUS_SHA256="32218f989dc6d08540202961f745563125ed625663f615a8392a7b28c4c8b22f"
+TAG="v0.12.1-dashboard-handles"
+HELPER_SHA256="b17fcc84d7dc30bce527ee65e0e4c6159850ee2d488ce8c49d9c177204479bb1"
+MANIFEST_SHA256="12c5526ad3e964ea0df7778a3c5731d60098f09995d876bca9d16868d52c20af"
+VERSION_STATUS_SHA256="7b578f603067f3c1589f1ad7317b88d1ebbba3cd10fcf28f5d33d8d111bd6a2f"
 BASE="https://raw.githubusercontent.com/codynick/platform-rpi/${TAG}"
 TARGET_VERSION="${CODYNICK_TARGET_VERSION:-$VERSION}"
 TARGET_TAG="${CODYNICK_TARGET_TAG:-$TAG}"
@@ -107,21 +107,21 @@ manifest = json.loads(pathlib.Path(sys.argv[1]).read_text())
 if manifest.get('version') != sys.argv[2] or manifest.get('tag') != sys.argv[3]:
     raise SystemExit('Incorrect release manifest')
 PY
-install -d -m 0755 /usr/local/lib/codynick/core-0.12.0
-install -m 0644 "$temp/app_setup.py" /usr/local/lib/codynick/core-0.12.0/app_setup.py
-install -m 0644 "$temp/core-manifest.json" /usr/local/lib/codynick/core-0.12.0/core-manifest.json
-install -m 0644 "$temp/version_status.py" /usr/local/lib/codynick/core-0.12.0/version_status.py
-install -m 0644 "$temp/vision_setup.py" /usr/local/lib/codynick/core-0.12.0/vision_setup.py
-install -m 0644 "$temp/speech_setup.py" /usr/local/lib/codynick/core-0.12.0/speech_setup.py
-install -m 0644 "$temp/ocr_setup.py" /usr/local/lib/codynick/core-0.12.0/ocr_setup.py
-install -m 0644 "$temp/tts_setup.py" /usr/local/lib/codynick/core-0.12.0/tts_setup.py
-install -m 0644 "$temp/llm_setup.py" /usr/local/lib/codynick/core-0.12.0/llm_setup.py
+install -d -m 0755 /usr/local/lib/codynick/core-0.12.1
+install -m 0644 "$temp/app_setup.py" /usr/local/lib/codynick/core-0.12.1/app_setup.py
+install -m 0644 "$temp/core-manifest.json" /usr/local/lib/codynick/core-0.12.1/core-manifest.json
+install -m 0644 "$temp/version_status.py" /usr/local/lib/codynick/core-0.12.1/version_status.py
+install -m 0644 "$temp/vision_setup.py" /usr/local/lib/codynick/core-0.12.1/vision_setup.py
+install -m 0644 "$temp/speech_setup.py" /usr/local/lib/codynick/core-0.12.1/speech_setup.py
+install -m 0644 "$temp/ocr_setup.py" /usr/local/lib/codynick/core-0.12.1/ocr_setup.py
+install -m 0644 "$temp/tts_setup.py" /usr/local/lib/codynick/core-0.12.1/tts_setup.py
+install -m 0644 "$temp/llm_setup.py" /usr/local/lib/codynick/core-0.12.1/llm_setup.py
 systemctl reset-failed codynick-install.service 2>/dev/null || true
 # A transient unit survives SSH disconnection, but intentionally does not survive reboot.
 flock -u 8
 systemd-run --unit=codynick-install --collect --property=Type=exec \
     --property=StandardOutput=append:${LOG} --property=StandardError=append:${LOG} \
-    /usr/bin/python3 -u /usr/local/lib/codynick/core-0.12.0/app_setup.py --worker
+    /usr/bin/python3 -u /usr/local/lib/codynick/core-0.12.1/app_setup.py --worker
 echo
 echo 'Installation is running in the background. Do not reboot until it finishes.'
 echo 'Follow progress: codynick-install-log --follow'

@@ -35,6 +35,11 @@ const DashboardTools = (() => {
         }
     }
     function redraw() { for (const card of cards) updateCardValues(card); }
+    function commitLayout(key) {
+        const model=cards.map(card=>({...card,id:keys.get(String(card.id))}));
+        layout={...layout,...CodyDashboardLayout.arrange(model,layout,columns(),key)};
+        persist();arrange();redraw();
+    }
     function keyForCards() {
         const counts = new Map(); keys = new Map();
         for (const card of cards) {
@@ -98,17 +103,25 @@ const DashboardTools = (() => {
         }
     }
     function decorate(element,card) {
-        const controls=document.createElement('div'); controls.className='layout-handles';
-        controls.innerHTML='<button type="button" data-layout="move" aria-label="Move card" title="Drag or use arrow keys">Move</button><button type="button" data-layout="resize" aria-label="Resize card" title="Drag or use arrow keys">Resize</button>';
-        element.prepend(controls); bindInputs(element,card);
-        for (const handle of controls.querySelectorAll('button')) {
+        const header=element.querySelector('.card-title');
+        header.dataset.layout='move';
+        header.setAttribute('role','button');
+        header.setAttribute('aria-label','Move card');
+        header.title='Drag this header to move the card, or focus it and use arrow keys';
+        const resize=document.createElement('button');
+        resize.type='button'; resize.dataset.layout='resize'; resize.className='card-resize-handle';
+        resize.setAttribute('aria-label','Resize card');
+        resize.title='Drag this corner to resize the card, or focus it and use arrow keys';
+        element.appendChild(resize); bindInputs(element,card);
+        setEditable(element);
+        for (const handle of [header,resize]) {
             const resizing=handle.dataset.layout==='resize';
             handle.addEventListener('pointerdown',event=>{
                 if (!editing || event.button!==0) return; event.preventDefault();
-                const key=keys.get(String(card.id)), rect=element.getBoundingClientRect(), cols=columns();
-                const start={x:Math.round((rect.left-gridElement().getBoundingClientRect().left)/(gridElement().clientWidth/cols)),
-                    y:Math.round((rect.top-gridElement().getBoundingClientRect().top)/114),
-                    w:Math.max(1,Math.round(rect.width/(gridElement().clientWidth/cols))), h:Math.max(1,Math.round((rect.height+18)/114))};
+                handle.focus({preventScroll:true});
+                const key=keys.get(String(card.id));
+                const model=cards.map(c=>({...c,id:keys.get(String(c.id))}));
+                const start={...CodyDashboardLayout.arrange(model,layout,columns())[key]};
                 gesture={key,start,previous:JSON.parse(JSON.stringify(layout)),px:event.clientX,py:event.clientY,handle,resizing};
                 handle.setPointerCapture(event.pointerId);
             });
@@ -120,8 +133,9 @@ const DashboardTools = (() => {
                 else {rect.x=Math.max(0,Math.min(columns()-rect.w,rect.x+dx));rect.y=Math.max(0,Math.min(1000,rect.y+dy));}
                 layout[gesture.key]=rect; arrange(); redraw();
             });
-            handle.addEventListener('pointerup',()=>{if(gesture?.handle===handle){gesture=null;persist();arrange();}});
+            handle.addEventListener('pointerup',()=>{if(gesture?.handle===handle){const key=gesture.key;gesture=null;commitLayout(key);}});
             handle.addEventListener('pointercancel',cancelGesture);
+            handle.addEventListener('lostpointercapture',()=>{if(gesture?.handle===handle)cancelGesture();});
             handle.addEventListener('keydown',event=>{
                 if(!editing || !['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;
                 event.preventDefault();
@@ -131,9 +145,16 @@ const DashboardTools = (() => {
                 const dx=event.key==='ArrowRight'?1:event.key==='ArrowLeft'?-1:0,dy=event.key==='ArrowDown'?1:event.key==='ArrowUp'?-1:0;
                 if(resizing){rect.w=Math.max(1,Math.min(columns()-rect.x,rect.w+dx));rect.h=Math.max(1,Math.min(6,rect.h+dy));}
                 else{rect.x=Math.max(0,Math.min(columns()-rect.w,rect.x+dx));rect.y=Math.max(0,Math.min(1000,rect.y+dy));}
-                layout[key]=rect;persist();arrange();redraw();
+                layout[key]=rect;commitLayout(key);
             });
         }
+    }
+    function setEditable(element) {
+        const header=element.querySelector('[data-layout="move"]');
+        if(header){header.tabIndex=editing?0:-1;header.setAttribute('aria-disabled',String(!editing));}
+        const resize=element.querySelector('[data-layout="resize"]');
+        if(resize)resize.disabled=!editing;
+        const body=element.querySelector('.card-body');if(body)body.inert=editing;
     }
     function cancelGesture(){if(gesture){layout=gesture.previous;gesture=null;arrange();redraw();}}
     function update(next,remote) {
@@ -146,6 +167,7 @@ const DashboardTools = (() => {
         document.getElementById('editLayout').onclick=()=>{
             releaseAll(); cancelGesture(); editing=!editing;
             gridElement().classList.toggle('editing-layout',editing);
+            gridElement().querySelectorAll('.card').forEach(setEditable);
             document.getElementById('editLayout').textContent=editing?'Lock layout':'Edit layout';
             document.getElementById('editLayout').setAttribute('aria-pressed',String(editing));
         };
