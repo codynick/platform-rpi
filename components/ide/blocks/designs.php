@@ -39,9 +39,10 @@ if ($name === '' || strlen($name)>120 || !preg_match('//u',$name) || preg_match(
 $path = $directory . '/' . hash('sha256',$name) . '.json';
 if (is_link($path)) design_reply(['ok'=>false,'error'=>'Invalid design path.'],400);
 if ($method === 'GET') {
-    $saved = json_decode(@file_get_contents($path),true);
-    if (!is_array($saved) || !is_array($saved['workspace'] ?? null)) design_reply(['ok'=>false,'error'=>'Design not found.'],404);
-    design_reply(['ok'=>true,'name'=>$saved['name'],'workspace'=>$saved['workspace']]);
+    // Preserve empty JSON objects inside Blockly state instead of turning them into [].
+    $saved = json_decode(@file_get_contents($path));
+    if (!is_object($saved) || !(is_object($saved->workspace ?? null) || is_array($saved->workspace ?? null))) design_reply(['ok'=>false,'error'=>'Design not found.'],404);
+    design_reply(['ok'=>true,'name'=>$saved->name,'workspace'=>$saved->workspace]);
 }
 if ($action === 'save' && !is_array($request['workspace'] ?? null)) design_reply(['ok'=>false,'error'=>'Workspace required.'],400);
 $lock = @fopen($directory . '/.save.lock','c');
@@ -55,7 +56,7 @@ if ($action === 'delete') {
 }
 if (is_file($path) && ($request['overwrite'] ?? false) !== true) design_reply(['ok'=>false,'exists'=>true,'error'=>'A design with this name already exists.'],409);
 if (!is_file($path) && count(glob($directory . '/*.json') ?: [])>=500) design_reply(['ok'=>false,'error'=>'Design limit reached.'],400);
-$saved = ['name'=>$name,'workspace'=>$request['workspace'],'updated_at'=>gmdate('c')];
+$saved = ['name'=>$name,'workspace'=>json_decode($raw)->workspace,'updated_at'=>gmdate('c')];
 $json = json_encode($saved,JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);
 $temporary = tempnam($directory,'.design-');
 if ($json === false || $temporary === false || file_put_contents($temporary,$json,LOCK_EX)!==strlen($json)) {

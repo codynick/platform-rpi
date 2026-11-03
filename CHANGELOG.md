@@ -6,6 +6,7 @@
 - Retain all eleven card types and legacy latch buttons; add opt-in momentary holds, queued taps, owner isolation and 1.5-second hold expiry.
 - Add stepped sliders, initial values and direct numeric entry with server-side clamping/snapping.
 - Add validated transactional dashboard snapshots, native Python source bundles and dashboard inclusion in named/transferred Blockly designs. Restores release buttons and discard pending taps.
+- Preserve empty JSON objects in named-design saves and loads, fixing the Linux round-trip regression.
 - Preserve card DOM on value-only updates and retain gauge animation; redraw charts on size changes.
 - Add PHP/MySQL/native Python and Chrome integration regressions. Physical Pi installation/reboot and hardware acceptance remain pending.
 - Preserve selected rollback-manifest overrides when sealing the new updater; published older tags remain unchanged.

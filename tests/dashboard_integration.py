@@ -63,6 +63,12 @@ def main():
                 except (OSError,urllib.error.URLError):time.sleep(.1)
             else:raise RuntimeError((base/'php.log').read_text())
             assert state['ok'] and len(state['cards'])==13
+            design_request=urllib.request.Request(origin+'/blocks/designs.php?action=save',
+                data=json.dumps({'name':'Empty object roundtrip','workspace':{'blocks':{}}}).encode(),
+                headers={'Content-Type':'application/json'})
+            with urllib.request.urlopen(design_request) as response:assert json.load(response)['ok']
+            with urllib.request.urlopen(origin+'/blocks/designs.php?action=load&name=Empty%20object%20roundtrip') as response:
+                assert json.load(response)['workspace']=={'blocks':{}},'Named designs must preserve empty object types'
             assert all(card['valid'] for card in state['cards']),state
             event=lambda seq,event,owner='test-owner-1':call('input',dict(id=hold.id,sequence=seq,event=event,owner=owner))
             event(1,'down');assert hold.pressed() and hold.clicked() and not hold.clicked()

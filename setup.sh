@@ -5,9 +5,9 @@ umask 022
 VERSION="0.12.0"
 TARGET_VERSION="0.12.0"
 TARGET_TAG="v0.12.0-dashboard-tools"
-TARGET_MANIFEST_SHA256="20682091838d13e0ab217499e61dae9112e567309d843080d6d4552a6375001e"
+TARGET_MANIFEST_SHA256="c106bc78b85fa52c7f8a92f7cc88e144558bbeb782e9bb835cb9d459946ae395"
 NETWORK_SHA256="f702fc8eeb6c17c32f5db2adbfc8e95055bac9cbb7bb808c9f99218612edca3f"
-APPS_SHA256="301f7a8e2a1bbe9d1da85404d9a25249127c98288126647a4230753a3a3cd95e"
+APPS_SHA256="bac4a8402152581f3cc32ff99143f768ee6523674042c0b05163ce739a576763"
 [[ $EUID -eq 0 ]] || { echo 'Run this setup command using sudo.'; exit 1; }
 echo "CodyNick setup ${TARGET_VERSION}: install / repair / upgrade / downgrade"
 exec 7>/run/lock/codynick-setup-entry.lock
