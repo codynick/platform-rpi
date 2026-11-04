@@ -54,7 +54,7 @@ This initial DHCP address can change. Do not assume it matches a previous SD car
 wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
 ```
 
-The entry banner is **0.13.0** and its pinned network component reports **0.2.2**.
+The entry banner is **0.14.0** and its pinned network component reports **0.2.2**.
 On first installation, answer `y` to
 `Prepare this network handover? [y/N]`.
 
@@ -90,7 +90,7 @@ wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/pl
 ```
 
 Answer `y`. Success reports `Stage: network-ready` and disables rollback, then the
-same entry point starts application installation. Wait for `CodyNick 0.13.0: READY`
+same entry point starts application installation. Wait for `CodyNick 0.14.0: READY`
 before rebooting. No root password is set. The older internal network helper may
 still mention `--confirm`; the unified entry point invokes it for you.
 
@@ -143,7 +143,7 @@ wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/pl
 
 Installation runs in the background, so closing SSH does not stop it. Do not reboot
 or power off until it finishes. The command automatically follows its log.
-Wait for **`CodyNick 0.13.0: READY`**, then press
+Wait for **`CodyNick 0.14.0: READY`**, then press
 `Ctrl+C` to leave the log display. If you see `INSTALLATION FAILED`, send the last
 30-50 log lines for diagnosis; do not continue as though installation succeeded.
 
@@ -258,7 +258,7 @@ student data separately before any deployment.
 To view the installed component versions and run health checks:
 
 ```bash
-sudo python3 /usr/local/lib/codynick/core-0.13.0/app_setup.py --check
+sudo python3 /usr/local/lib/codynick/core-0.14.0/app_setup.py --check
 ```
 
 For a compact version report and checksum status for every system example:
@@ -437,13 +437,34 @@ for supported gadgets, setup, saved-state behavior and known limits.
 
 Refresh existing editor/dashboard tabs after updating. Software/native/browser checks
 cover these changes; physical Raspberry Pi installation and hardware acceptance remain
-pending. Success reports **CodyNick 0.13.0: READY**. Use the same one-line setup command.
+pending. Success reports **CodyNick 0.14.0: READY**. Use the same one-line setup command.
+
+## Server-style simulation assets (0.14.0)
+
+Simulation now uses the server simulator's appearance and **Add gadget / Add asset**
+pickers. Add hot/cold cups, ultrasonic target blocks, soil pots and watering cans.
+Drag probes into water/soil and aim the ultrasonic sensor at targets. Temperature,
+soil soaking/drainage and watering respond gradually using the same model rules.
+Motion, RFID and UltraSeg also work through native simulated gadget APIs and blocks.
+
+Run `CodyNick examples/simulator/world_assets.py` to display these sensor values and
+lights alongside dashboard gauges. It replaces dashboard cards. Add Temperature,
+Ultrasonic and Soil-moisture gadgets before Run, then add/move assets while running.
+See [the simulator guide](components/simulator/README.md) for setup and persistence.
+Physical Pi/gadget validation remains pending.
 
 ## Revision History
 
 ## Current version
 
-**Unified setup: 0.13.0; application: 0.13.0; network component: 0.2.2.**
+**Unified setup: 0.14.0; application: 0.14.0; network component: 0.2.2.**
+
+## 0.14.0: Server-style Simulator Gadgets and Assets
+
+Uses server-style artwork, controls and asset interactions with native RPi sensor
+models. Adds cups, targets, soil pots, watering cans, motion/RFID/UltraSeg simulation,
+scene preservation and an asset/dashboard example. Existing mixed targets, dashboard
+cards and physical drivers remain. Physical Pi validation remains pending.
 
 ## 0.13.0: Integrated Block Spaces and Mixed Targets
 
@@ -684,6 +705,7 @@ pending, so this remains a staged hardware trial, not a production fleet updater
 
 | Version | Status | What is new |
 | --- | --- | --- |
+| **0.14.0-simulator-assets** | Native/model parity, Chrome and database checks; Pi acceptance pending | Server-style gadget/asset simulation and native dashboard example. |
 | **0.13.0-block-spaces** | Native simulator/sprite, PHP/MySQL and Chrome checks; Pi acceptance pending | Integrated spaces, per-gadget targets, mixed programs and block examples. |
 | **0.12.1-dashboard-handles** | Software/browser checks; Pi acceptance pending | Drag headers, resize bottom-right corners, retain locking/keyboard controls and add the complete dashboard feature test example. |
 | **0.12.0-dashboard-tools** | PHP/MySQL/native Python and Chrome checks; Pi acceptance pending | Interactive shared layouts, hold/tap buttons, stepped sliders, dashboard projects and stable live updates. |

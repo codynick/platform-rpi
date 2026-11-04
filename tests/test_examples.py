@@ -11,6 +11,28 @@ EXAMPLES = Path(__file__).resolve().parents[1] / 'components/examples'
 
 
 class ExampleTests(unittest.TestCase):
+    def test_world_assets_companion_reads_all_sensors_and_closes(self):
+        connection=MagicMock()
+        simulator=MagicMock(return_value=connection)
+        sensors={name:types.SimpleNamespace(read=MagicMock(return_value=value))
+                 for name,value in [('Temperature_Sensor',40),('Ultrasonic_Sensor',100),('Soil_Moisture_Sensor',20)]}
+        rgb=types.SimpleNamespace(set=MagicMock())
+        cards={}
+        def card(kind,title,**options):
+            cards[title]=MagicMock();return cards[title]
+        dashboard=types.SimpleNamespace(clear=MagicMock(),Card=card)
+        with patch.dict('sys.modules',{'Dashboard':dashboard,
+            'CodyNick':types.SimpleNamespace(Simulator=simulator,RGB_Matrix=rgb,**sensors)}), \
+             patch('time.sleep',side_effect=KeyboardInterrupt), self.assertRaises(KeyboardInterrupt):
+            runpy.run_path(str(EXAMPLES/'simulator/world_assets.py'))
+        cards['Water temperature'].set.assert_called_once_with(40)
+        cards['Target distance'].set.assert_called_once_with(100)
+        cards['Soil moisture'].set.assert_called_once_with(20)
+        sensors['Ultrasonic_Sensor'].read.assert_called_once_with(connection,'Standalone')
+        rgb.set.assert_any_call(connection,0,'#FF0000')
+        rgb.set.assert_any_call(connection,1,'#FF0000')
+        connection.close.assert_called_once()
+
     def test_all_spaces_python_companion_uses_simulator_and_closes_connection(self):
         connection=MagicMock()
         simulator=MagicMock(return_value=connection)

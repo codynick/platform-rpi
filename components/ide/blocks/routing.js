@@ -1,7 +1,7 @@
 'use strict';
 // Route only the connection placeholder in trusted block templates, before inserting user text.
 const BlockRouting = (() => {
-  const supported=/^(?:Joystick|LED_Matrix|RGB_Matrix|CJP_Sound_Maker|Temperature_Sensor|Soil_Moisture_Sensor|Ultrasonic_Sensor|Seven_Segment|WiFi_IoT)\./;
+  const supported=/^(?:Joystick|LED_Matrix|RGB_Matrix|CJP_Sound_Maker|Temperature_Sensor|Soil_Moisture_Sensor|Ultrasonic_Sensor|Seven_Segment|WiFi_IoT|Motion_Detection|RFID_Reader)\./;
   const usesConnection=spec=>/\bcody\b/.test(spec.python || '');
   const supportsSimulation=spec=>usesConnection(spec) && supported.test(spec.python || '');
   function target(block,spec) {
@@ -10,8 +10,8 @@ const BlockRouting = (() => {
     if(value==='SIMULATION' && !supportsSimulation(spec))throw Error('Simulation is unavailable for '+spec.type+'. Use Hardware.');
     if(value==='SIMULATION' && /^(Joystick|Seven_Segment|Ultrasonic_Sensor)\./.test(spec.python)) {
       const device=String(block.getFieldValue('device') || '').replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
-      const allowed=spec.python.startsWith('Joystick.')?['CJP','5','STANDALONE','0']:['STANDALONE','0'];
-      if(!allowed.includes(device))throw Error('This simulated block requires '+(spec.python.startsWith('Joystick.')?'CodyJoy Pro or Standalone':'Standalone')+'. Choose a supported device.');
+      const allowed=spec.python.startsWith('Joystick.')?['CJP','5','STANDALONE','0']:['STANDALONE','0','ULTRASEG',spec.python.startsWith('Seven_Segment.')?'2':'1'];
+      if(!allowed.includes(device))throw Error('This simulated block requires '+(spec.python.startsWith('Joystick.')?'CodyJoy Pro or Standalone':'Standalone or UltraSeg')+'. Choose a supported device.');
     }
     return value;
   }

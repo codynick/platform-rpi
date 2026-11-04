@@ -11,6 +11,7 @@ import threading
 import time
 from urllib.parse import parse_qs, urlsplit
 from wifi_sim import WiFiModel
+import world
 
 ROOT = Path(__file__).resolve().parent
 
@@ -45,6 +46,7 @@ class State:
         self.notes = []
         self.sequence = 0
         self.seven_segment = ''
+        self.ultra_segment = ''
         self.scene_file = scene_file
         self.scene = {'gadgets': {'cjp': {'x': 40, 'y': 40}}, 'temperature': 21.1}
         self.matrix = {'text': '', 'speed': 1, 'pixels': [0] * 64, 'mode': 'pixels', 'revision': 0}
@@ -52,6 +54,10 @@ class State:
         self.wifi = WiFiModel()
         if scene_file and scene_file.exists():
             saved = json.loads(scene_file.read_text())
+            # Keep the original manual scene for recovery/downgrade before world edits.
+            if isinstance(saved,dict) and not any(k in saved for k in ('world','garden')):
+                backup=scene_file.with_name(scene_file.stem+'.pre-assets.json')
+                if not backup.exists():backup.write_bytes(scene_file.read_bytes())
             # Older prototypes stored raw soil readings; retain their layout.
             if isinstance(saved, dict) and isinstance(saved.get('soil'), (int, float)) and saved['soil'] > 100:
                 saved['soil'] = 100
@@ -62,7 +68,7 @@ class State:
         if not isinstance(scene, dict) or not isinstance(scene.get('gadgets'), dict):
             raise ValueError('Invalid stage layout')
         gadgets = scene['gadgets']
-        if 'cjp' not in gadgets or any(key not in ['cjp', 'seven', 'temperature', 'matrix', 'joystick', 'ultrasonic', 'soil', 'wifi'] for key in gadgets):
+        if 'cjp' not in gadgets or any(key not in ['cjp', 'seven', 'temperature', 'matrix', 'joystick', 'ultrasonic', 'soil', 'wifi', 'motion', 'rfid', 'ultraseg'] for key in gadgets):
             raise ValueError('The stage must contain CodyJoy Pro and supported gadgets only.')
         clean = {}
         for key, pos in gadgets.items():
@@ -74,7 +80,7 @@ class State:
         if not math.isfinite(temperature) or not -55 <= temperature <= 125:
             raise ValueError('Temperature must be between -55 and 125 C.')
         result = {'gadgets': clean, 'temperature': round(temperature, 1)}
-        for key, default, low, high in [('distance', 50, 2, 400), ('soil', 50, 0, 100)]:
+        for key, default, low, high in [('distance', 50, 0, 400), ('soil', 50, 0, 100), ('ultraDistance', 50, 2, 400)]:
             number = float(scene.get(key, default))
             if not math.isfinite(number) or not low <= number <= high:
                 raise ValueError(f'{key} must be between {low} and {high}.')
@@ -84,16 +90,26 @@ class State:
             if not isinstance(value, bool):
                 raise ValueError('Network availability must be true or false.')
             result[key] = value
+        if not isinstance(scene.get('motion',False),bool):raise ValueError('Invalid motion reading')
+        result['motion']=scene.get('motion',False)
+        result['rfid']=str(scene.get('rfid','00000000')).upper()
+        if len(result['rfid'])!=8 or any(c not in '0123456789ABCDEF' for c in result['rfid']):raise ValueError('RFID must have 8 hexadecimal characters')
+        if scene.get('world') is not None:result['world']=world.clean_world(scene['world'])
+        if scene.get('garden') is not None:result['garden']=world.clean_garden(scene['garden'])
         return result
 
     def save_scene(self, scene):
         clean = self.validate_scene(scene)
+        now=time.time()*1000
+        if 'world' in clean:clean['world']['probe']['at']=now
+        if 'garden' in clean:clean['garden']['at']=now
         if self.scene_file:
             temporary = self.scene_file.with_suffix('.tmp')
             temporary.write_text(json.dumps(clean, indent=2) + '\n')
             temporary.replace(self.scene_file)
         if 'seven' not in clean['gadgets']:
             self.seven_segment = ''
+        if 'ultraseg' not in clean['gadgets']:self.ultra_segment=''
         if 'matrix' not in clean['gadgets']:
             self.matrix.update(text='', pixels=[0] * 64, mode='pixels', revision=self.matrix['revision'] + 1)
         self.scene = clean
@@ -101,11 +117,12 @@ class State:
 
     def require(self, gadget):
         if gadget not in self.scene['gadgets']:
-            names = {'seven': 'Seven-segment display', 'temperature': 'Temperature sensor', 'matrix': 'LED matrix', 'joystick': 'Stand-Alone joystick', 'ultrasonic': 'Ultrasonic sensor', 'soil': 'Soil-moisture sensor', 'wifi': 'Wi-Fi/IoT gadget'}
+            names = {'seven': 'Seven-segment display', 'temperature': 'Temperature sensor', 'matrix': 'LED matrix', 'joystick': 'Stand-Alone joystick', 'ultrasonic': 'Ultrasonic sensor', 'soil': 'Soil-moisture sensor', 'wifi': 'Wi-Fi/IoT gadget', 'motion':'PIR motion sensor', 'rfid':'RFID reader', 'ultraseg':'UltraSeg'}
             self.error = f"Add {names[gadget]} to the stage, then run the Python script again."
             raise ValueError(self.error)
 
     def expire(self):
+        world.advance(self.scene)
         now = time.monotonic()
         if now - self.input_seen > 1:
             self.inputs = []
@@ -122,7 +139,10 @@ class State:
         with self.lock:
             self.expire()
             action = data.get('action')
-            if action == 'scene':
+            if action in ('scene','scene_edit'):
+                if action=='scene_edit':
+                    base=self.validate_scene(data['base']);edited=self.validate_scene(data['scene'])
+                    data={**data,'scene':world.merge_edit(base,edited,self.scene)}
                 if self.session:
                     # Arrange freely, but stop Python before changing its hardware set.
                     if set(data['scene']['gadgets']) != set(self.scene['gadgets']):
@@ -170,10 +190,10 @@ class State:
             elif action == 'clear':
                 self.leds = ['#000000'] * 16
             elif action == 'seven_segment':
-                self.require('seven')
-                if data.get('device') != 0:
-                    raise ValueError('Only the Stand-Alone seven-segment display is supported.')
-                self.seven_segment = display_number(data['value'])
+                if data.get('device') not in (0,2):raise ValueError('Choose Standalone or UltraSeg display.')
+                self.require('seven' if data['device']==0 else 'ultraseg')
+                if data['device']==0:self.seven_segment=display_number(data['value'])
+                else:self.ultra_segment=display_number(data['value'])
             elif action == 'temperature':
                 self.require('temperature')
                 return {'temperature': self.scene['temperature']}
@@ -181,10 +201,13 @@ class State:
                 self.require('joystick')
                 return {'states': self.joystick_inputs[:]}
             elif action == 'ultrasonic':
-                self.require('ultrasonic')
-                if data.get('device') != 0:
-                    raise ValueError('Only the Stand-Alone ultrasonic sensor is supported.')
-                return {'value': self.scene.get('distance', 50)}
+                if data.get('device') not in (0,1):raise ValueError('Choose Standalone or UltraSeg ultrasonic sensor.')
+                self.require('ultrasonic' if data['device']==0 else 'ultraseg')
+                return {'value': self.scene.get('distance' if data['device']==0 else 'ultraDistance',50)}
+            elif action == 'motion':
+                self.require('motion');return {'value':self.scene.get('motion',False)}
+            elif action == 'rfid':
+                self.require('rfid');return {'value':self.scene.get('rfid','00000000')}
             elif action == 'soil':
                 self.require('soil')
                 return {'value': self.scene.get('soil', 50)}
@@ -229,7 +252,7 @@ class State:
     def snapshot(self):
         with self.lock:
             self.expire()
-            return {'leds': self.leds[:], 'notes': self.notes[:], 'states': self.inputs[:], 'joystick_states': self.joystick_inputs[:], 'wifi': self.wifi.snapshot(self.scene), 'connected': bool(self.session), 'now': time.time(), 'seven_segment': self.seven_segment, 'scene': self.validate_scene(self.scene), 'matrix': json.loads(json.dumps(self.matrix)), 'error': self.error, 'prototype': 'stage-4'}
+            return {'leds': self.leds[:], 'notes': self.notes[:], 'states': self.inputs[:], 'joystick_states': self.joystick_inputs[:], 'wifi': self.wifi.snapshot(self.scene), 'connected': bool(self.session), 'now': time.time(), 'seven_segment': self.seven_segment, 'ultra_segment':self.ultra_segment, 'scene': self.validate_scene(self.scene), 'matrix': json.loads(json.dumps(self.matrix)), 'error': self.error, 'prototype': 'stage-4'}
 
 
 def handler(token, state):
@@ -262,6 +285,9 @@ def handler(token, state):
 
         def do_GET(self):
             url = urlsplit(self.path)
+            # Identical server UI assets are served by the existing native process.
+            if url.path.startswith('/simulator/'):
+                url=url._replace(path=url.path[len('/simulator'):])
             supplied = parse_qs(url.query).get('token', [''])[0]
             entry = url.path == '/' and hmac.compare_digest(supplied, token)
             if not entry and not self.authenticated():
@@ -273,8 +299,10 @@ def handler(token, state):
             if url.path in ['/favicon.ico', '/tool-navigation.css']:
                 kind = 'image/x-icon' if url.path.endswith('.ico') else 'text/css'
                 return self.reply(200, (ROOT / url.path[1:]).read_bytes(), kind)
-            if url.path in ['/app.js', '/font5x7.js', '/style.css', '/gadget.svg', '/seven-segment.svg', '/sensor.svg', '/sensor.png', '/matrix.svg', '/joystick.png', '/ultrasonic.png', '/soil.png', '/wifi.png']:
+            if url.path in ['/app.js', '/font5x7.js', '/style.css', '/gadget.svg', '/seven-segment.svg', '/sensor.svg', '/sensor.png', '/matrix.svg', '/joystick.png', '/ultrasonic.png', '/soil.png', '/wifi.png','/viewport.js','/world-models.js','/world-store.js','/world-assets.js','/soil-world.js','/world-assets.css','/soil-world.css','/codynick-logo.png']:
                 kind = {'/app.js': 'text/javascript', '/font5x7.js': 'text/javascript', '/style.css': 'text/css', **{p: 'image/png' for p in ['/sensor.png', '/joystick.png', '/ultrasonic.png', '/soil.png', '/wifi.png']}}
+                kind.update({p:'text/javascript' for p in ['/viewport.js','/world-models.js','/world-store.js','/world-assets.js','/soil-world.js']})
+                kind.update({'/world-assets.css':'text/css','/soil-world.css':'text/css','/codynick-logo.png':'image/png'})
                 return self.reply(200, (ROOT / url.path[1:]).read_bytes(), kind.get(url.path, 'image/svg+xml'))
             return self.reply(404, {'error': 'Not found'})
 
@@ -286,7 +314,7 @@ def handler(token, state):
                 return self.reply(400, {'error': 'Expected JSON command'})
             try:
                 length = int(self.headers.get('Content-Length', '0'))
-                if not 0 < length <= 4096:
+                if not 0 < length <= 262144:
                     raise ValueError('Invalid request size')
                 data = json.loads(self.rfile.read(length))
                 if not isinstance(data, dict):

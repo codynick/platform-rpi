@@ -132,6 +132,13 @@ class SimulatorTests(unittest.TestCase):
             self.state.scene.update(distance=12.3, soil=73)
             self.assertEqual(api.Ultrasonic_Sensor.read(cody, 0), 12.3)
             self.assertEqual(api.Soil_Moisture_Sensor.read(cody), 73)
+            self.state.scene['gadgets'].update({kind:{'x':40,'y':40} for kind in ['motion','rfid','ultraseg']})
+            self.state.scene.update(motion=True,rfid='DEADBEEF',ultraDistance=33.5)
+            self.assertTrue(api.Motion_Detection.detect(cody))
+            self.assertEqual(api.RFID_Reader.readuid(cody),'DEADBEEF')
+            self.assertEqual(api.Ultrasonic_Sensor.read(cody,'UltraSeg'),33.5)
+            api.Seven_Segment.display(cody,'UltraSeg',42)
+            self.assertEqual(self.state.snapshot()['ultra_segment'],'42')
             api.WiFi_IoT.IOT_WRITE_DELAY_SECONDS = 0
             self.assertEqual(api.WiFi_IoT.status(cody), {'wifi': 0, 'iot': 0})
             self.assertTrue(api.WiFi_IoT.set_wifi(cody, 'demo-network', 'demo-only'))

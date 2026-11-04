@@ -61,7 +61,11 @@ class Simulator:
 
     def write(self, packet):
         text = packet.decode('ascii')
-        if text.startswith('CN@@TEMP@@'):
+        if text.startswith('CN@@PIR@@'):
+            value=self._request('motion')['value'];self.buffer=('CN@@PIR@@'+('1' if value else '0')).ljust(20,'_').encode('ascii')
+        elif text.startswith('CN@@RFID@@'):
+            value=self._request('rfid')['value'];self.buffer=('CN@@RFID@@'+value).ljust(20,'_').encode('ascii')
+        elif text.startswith('CN@@TEMP@@'):
             temperature = self._request('temperature')['temperature']
             self.buffer = ('CN@@TEMP@@' + str(temperature)).ljust(20, '_').encode('ascii')
         elif text.startswith('CN@@SOIL@@'):

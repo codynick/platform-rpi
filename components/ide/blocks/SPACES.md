@@ -1,4 +1,4 @@
-# Simulation, Dashboard and Sprites (RPi 0.13.0)
+# Simulation, Dashboard and Sprites (RPi 0.14.0)
 
 The right side of Block Coding now has three spaces. Switch between **Simulation**,
 **Dashboard** and **Sprites**, or use **Hide Spaces / Show Spaces** to expand the
@@ -30,14 +30,14 @@ Simulation supports:
 
 - CJP RGB LEDs, buzzer and built-in joystick.
 - Standalone joystick, temperature, soil moisture, ultrasonic, seven-segment and
-  8×8 LED matrix gadgets supported by the existing simulator.
+  8Ã—8 LED matrix gadgets supported by the existing simulator.
+- Motion detection, RFID and UltraSeg (ultrasonic + seven-segment).
 - The existing offline Wi-Fi/IoT protocol model; it does not contact a real cloud.
 
-Choose CJP or Standalone for a simulated joystick, and Standalone for simulated
-seven-segment/ultrasonic blocks. Add the required standalone gadgets in Simulation
+Choose CJP or Standalone for a simulated joystick, and Standalone or UltraSeg for
+simulated seven-segment/ultrasonic blocks. Add the required standalone gadgets in Simulation
 **before Run**. Stop before adding/removing gadgets; changing readings while the
-program runs is supported. RFID, motion detection and unknown custom gadget APIs
-remain Hardware-only. Unsupported simulated device selections are rejected during
+program runs is supported. Unknown custom gadget APIs remain Hardware-only. Unsupported simulated device selections are rejected during
 generation, with no fallback to physical hardware.
 
 This release does not add a Dashboard block category. Its Dashboard space displays
@@ -72,3 +72,15 @@ designs must be reviewed before running in an older editor: older versions do no
 understand Simulation targets and default gadget blocks to Hardware. Preserve a
 downloaded copy before downgrading. Physical Pi and gadget acceptance for this
 release remain pending; software tests use a mocked physical transport.
+
+## Server-style assets (0.14.0)
+
+Use **Add gadget** for devices and **Add asset** for hot/cold water cups, ultrasonic
+targets, soil pots and watering cans. Drag probes into cups/pots; aim the ultrasonic
+sensor at target blocks. Asset settings change temperatures, target sizes and soil
+type/initial moisture. Manual sensor values remain available when world sensing is
+off. See [the simulator guide](../../simulator/README.md).
+
+`CodyNick examples/simulator/world_assets.py` displays native sensor readings on
+dashboard gauges and LEDs. Add Temperature, Ultrasonic and Soil-moisture before
+Run. It replaces dashboard cards; stop it before running another program.

@@ -1,23 +1,30 @@
+const localFetch=async(url,options={})=>{try{if(url==='/state')await window.CodyLiveStore.ready;const data=await (url==='/state'?window.CodyLiveStore.simState():window.CodyLiveStore.simCommand(JSON.parse(options.body)));return {ok:true,json:async()=>data};}catch(error){return {ok:false,json:async()=>({error:error.message})};}};
 'use strict';
-const embedded=new URLSearchParams(location.search).get('embedded')==='1';
+
+const embedded=new URLSearchParams(location.search).get('embedded')==='1'||window.self!==window.top;
 if(embedded)document.body.classList.add('embedded');
-history.replaceState(null, '', embedded?'/?embedded=1':'/');
+history.replaceState(null,'',embedded?'/?embedded=1':'/');
 const $ = id => document.getElementById(id);
 const mainPanelUrl = new URL(window.location.href);
 mainPanelUrl.port = '';
-mainPanelUrl.pathname = '/';
+mainPanelUrl.pathname = '/blocks/';
 mainPanelUrl.search = '';
 mainPanelUrl.hash = '';
-$('mainPanel').href = mainPanelUrl.href;
+$('mainPanel').hidden=window.self!==window.top;
+$('mainPanel').href = mainPanelUrl.href;$('mainPanel').target='_top';
 const newGadgets={
+  motion:{title:'PIR motion sensor',body:'<div class="sensor-controls"><label><input id="motionValue" type="checkbox"> Motion detected</label></div>'},
+  rfid:{title:'RFID reader',body:'<div class="sensor-controls"><label>UID (8 hex characters)<input id="rfidValue" maxlength="8" value="00000000"></label></div>'},
+  ultraseg:{title:'UltraSeg',body:'<div class="sensor-controls"><label>Distance (cm)<input id="ultraDistanceValue" type="number" min="2" max="400" step="0.1" value="50"></label><p>Display: <strong id="ultraSegmentValue">Blank</strong></p></div>'},
   joystick:{title:'Stand-Alone joystick',body:'<div class="photo-device"><img class="joystick-photo" src="/joystick.png" alt="Stand-Alone joystick"><div class="standalone-stick"></div><output id="standaloneState">Neutral</output></div>'},
   ultrasonic:{title:'Ultrasonic sensor',body:'<div class="photo-device"><img src="/ultrasonic.png" alt="Stand-Alone ultrasonic sensor"><div class="sensor-controls"><label for="distanceValue">Distance (cm)</label><input id="distanceValue" type="number" min="2" max="400" step="0.1" value="50"><input id="distanceSlider" type="range" min="2" max="400" step="0.1" value="50" aria-label="Simulated distance"></div></div>'},
   soil:{title:'Soil-moisture sensor',body:'<div class="photo-device"><img class="soil-photo" src="/soil.png" alt="Soil-moisture sensor"><div class="sensor-controls"><label for="soilValue">Soil moisture (%)</label><input id="soilValue" type="number" min="0" max="100" step="1" value="50"><input id="soilSlider" type="range" min="0" max="100" step="1" value="50" aria-label="Simulated soil reading"></div></div>'},
   wifi:{title:'Wi-Fi / IoT',body:'<div class="photo-device wifi-device"><img src="/wifi.png" alt="Wi-Fi and IoT gadget"><p class="sim-label">SIMULATED NETWORK</p><div class="network-controls"><label><input id="wifiLink" type="checkbox" checked> Wi-Fi available</label><label><input id="cloudLink" type="checkbox" checked> Cloud available</label></div><dl class="wifi-status"><dt>Wi-Fi</dt><dd id="wifiState">Disconnected</dd><dt>IoT</dt><dd id="iotState">Disconnected</dd><dt>SSID</dt><dd id="wifiSSID">Not configured</dd></dl><div class="cloud-editor"><label>Type<select id="cloudType"><option value="0">Int</option><option value="1">Float</option><option value="2">Bool</option><option value="3">String</option></select></label><label>Index<input id="cloudIndex" type="number" min="0" max="3" value="0"></label><label class="cloud-value">Value<input id="cloudValue" maxlength="40" value="0"></label><button id="cloudApply">Set value</button></div><pre id="cloudValues" aria-label="Simulated cloud variables"></pre></div>'}
 };
+function gadgetHeader(kind,title){return `<div class="gadget-header"><button class="gadget-remove" data-remove="${kind}" title="Remove ${title}" aria-label="Remove ${title}">×</button><button class="handle" aria-label="Move ${title}" title="Drag to move ${title}"><span class="gadget-title">${title}</span><span class="drag-grip" aria-hidden="true">✥</span></button></div>`;}
 for(const [kind,data] of Object.entries(newGadgets)) {
   const item=document.createElement('section');item.className='stage-item';item.id='gadget-'+kind;item.dataset.kind=kind;item.hidden=true;
-  item.innerHTML=`<button class="handle" aria-label="Move ${data.title}" title="Move ${data.title}">${data.title}<span aria-hidden="true">&#10021;</span></button>${data.body}`;
+  item.innerHTML=`${gadgetHeader(kind,data.title)}${data.body}`;
   $('stage').append(item);
 }
 for(const [state,symbol] of [['UP','\u2191'],['LEFT','\u2190'],['CLICK','\u25cf'],['RIGHT','\u2192'],['DOWN','\u2193']]) {
@@ -25,6 +32,7 @@ for(const [state,symbol] of [['UP','\u2191'],['LEFT','\u2190'],['CLICK','\u25cf'
   document.querySelector('.standalone-stick').append(button);
 }
 for(const image of document.images) {
+  image.draggable=false;
   let retries=0;
   const retry=()=>{if(retries++<3)setTimeout(()=>{const url=new URL(image.src);url.searchParams.set('retry',retries);image.src=url.href;},400);};
   image.addEventListener('error',retry);
@@ -61,7 +69,7 @@ function displayNumber(text) {
 }
 let audio, muted = true, active = '', standaloneActive='', lastNote = 0, online = false, oscillator, lastInput = 0;
 async function command(body) {
-  const reply = await fetch('/command', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  const reply = await localFetch('/command', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
   if (!reply.ok) { const data=await reply.json(); throw new Error(data.error || 'Simulator request failed'); }
   return reply.json();
 }
@@ -96,26 +104,30 @@ for (const button of document.querySelectorAll('[data-state]')) {
 }
 function releaseInputs(){input('');if(scene?.gadgets.joystick)input('','joystick');stopTone();}
 window.addEventListener('blur',releaseInputs);
-window.addEventListener('message',event=>{if(event.source===window.parent && event.data?.type==='codynick-space-visibility' && event.data.visible===false)releaseInputs();});
+window.addEventListener('message',event=>{if(event.source===window.parent&&event.data?.type==='codynick-space-visibility'&&event.data.visible===false)releaseInputs();});
 document.addEventListener('visibilitychange', () => {if (document.hidden)releaseInputs();});
 const labels={cjp:'CodyJoy Pro',seven:'Seven-segment',temperature:'Temperature sensor',matrix:'LED matrix',...Object.fromEntries(Object.entries(newGadgets).map(([key,value])=>[key,value.title]))};
-const defaults={seven:{x:440,y:40},temperature:{x:440,y:360},matrix:{x:760,y:360},joystick:{x:40,y:640},ultrasonic:{x:400,y:720},soil:{x:740,y:720},wifi:{x:1050,y:760}};
+const defaults={motion:{x:400,y:640},rfid:{x:700,y:640},ultraseg:{x:700,y:40},seven:{x:440,y:40},temperature:{x:440,y:360},matrix:{x:760,y:360},joystick:{x:40,y:640},ultrasonic:{x:400,y:720},soil:{x:740,y:720},wifi:{x:1050,y:760}};
 let scene=null, selected='cjp', dragging=null, pending=0, pythonConnected=false, z=1, temperatureTimer, stageZoom=1, initialFit=false;
-function zoom(value){stageZoom=value;$('stage').style.zoom=value;$('stageViewport').scrollTo(0,0);}
-function fitStage(){
-  if(!scene) return;
-  const viewport=$('stageViewport'); let right=380,bottom=600;
-  for(const [key,pos] of Object.entries(scene.gadgets)) {
-    const item=$('gadget-'+key);right=Math.max(right,pos.x+item.offsetWidth+24);bottom=Math.max(bottom,pos.y+item.offsetHeight+24);
-  }
-  zoom(Math.max(.2,Math.min(1,(viewport.clientWidth-16)/right,(viewport.clientHeight-16)/bottom)));
-}
-$('fit').onclick=fitStage;$('actual').onclick=()=>zoom(1);
+let camera={scale:1,x:0,y:0},panning=null,viewTouched=false;
+const viewport=$('stageViewport'),V=window.CodySimulatorViewport;
+function renderView(view){camera=view;stageZoom=view.scale;$('stage').style.transform=`translate(${view.x}px,${view.y}px) scale(${view.scale})`;$('zoomLevel').textContent=Math.round(view.scale*100)+'%';}
+window.CodySimulatorView={snapshot:()=>({camera:{...camera},selected}),restore:v=>{renderView({...v.camera});initialFit=true;viewTouched=true;select(v.selected);}};
+function fitStage(){if(!scene||viewport.clientWidth<=0||viewport.clientHeight<=0)return;let left=Infinity,top=Infinity,right=0,bottom=0;for(const [kind,pos]of Object.entries(scene.gadgets)){const item=$('gadget-'+kind);left=Math.min(left,pos.x);top=Math.min(top,pos.y);right=Math.max(right,pos.x+item.offsetWidth);bottom=Math.max(bottom,pos.y+item.offsetHeight);}renderView(V.fit({left,top,right,bottom},viewport.clientWidth,viewport.clientHeight));viewTouched=false;}
+viewport.addEventListener('wheel',event=>{if(event.target.closest('input,select,textarea')||panning||dragging)return;event.preventDefault();const r=viewport.getBoundingClientRect();renderView(V.zoomAt(camera,{x:event.clientX-r.left,y:event.clientY-r.top},event.deltaY));viewTouched=true;},{passive:false});
+viewport.addEventListener('pointerdown',event=>{if(event.button!==0||event.target.closest('.stage-item')||panning)return;event.preventDefault();viewport.focus({preventScroll:true});viewport.setPointerCapture(event.pointerId);panning={id:event.pointerId,x:event.clientX,y:event.clientY,camera:{...camera}};viewport.classList.add('panning');});
+viewport.addEventListener('pointermove',event=>{if(!panning||event.pointerId!==panning.id)return;renderView(V.pan(panning.camera,event.clientX-panning.x,event.clientY-panning.y));viewTouched=true;});
+function endPan(){if(!panning)return;const id=panning.id;panning=null;viewport.classList.remove('panning');if(viewport.hasPointerCapture?.(id))viewport.releasePointerCapture(id);}
+for(const name of ['pointerup','pointercancel','lostpointercapture'])viewport.addEventListener(name,event=>{if(panning?.id===event.pointerId)endPan();});
+window.addEventListener('blur',endPan);
+viewport.addEventListener('dblclick',event=>{if(!event.target.closest('.stage-item')){event.preventDefault();fitStage();}});
+viewport.addEventListener('keydown',event=>{if(event.target!==viewport)return;const center={x:viewport.clientWidth/2,y:viewport.clientHeight/2},delta={ArrowLeft:[40,0],ArrowRight:[-40,0],ArrowUp:[0,40],ArrowDown:[0,-40]}[event.key];if(event.key==='Home'||event.key==='0'){event.preventDefault();fitStage();}else if(['+','=','-'].includes(event.key)){event.preventDefault();renderView(V.zoomAt(camera,center,event.key==='-'?100:-100));viewTouched=true;}else if(delta){event.preventDefault();renderView(V.pan(camera,...delta));viewTouched=true;}});
+window.addEventListener('resize',()=>{if(!viewTouched)fitStage();});
+$('addGadgets').onclick=()=>$('gadgetPicker').showModal();$('closeGadgets').onclick=()=>$('gadgetPicker').close();
 function showError(message) { $('error').textContent=message; $('error').hidden=!message; }
 function select(kind) {
   selected=kind; $('selected').textContent=labels[kind];
   for(const item of document.querySelectorAll('.stage-item')) item.classList.toggle('selected',item.dataset.kind===kind);
-  $('remove').disabled=kind==='cjp'||pythonConnected;
 }
 function renderScene(value) {
   scene=structuredClone(value);
@@ -133,6 +145,7 @@ function renderScene(value) {
       $(prefix+'Value').value=value[key];$(prefix+'Slider').value=value[key];
     }
   }
+  $('motionValue').checked=scene.motion;if(document.activeElement!==$('rfidValue'))$('rfidValue').value=scene.rfid;if(document.activeElement!==$('ultraDistanceValue'))$('ultraDistanceValue').value=scene.ultraDistance;
   $('wifiLink').checked=scene.wifi_link;$('cloudLink').checked=scene.cloud_link;
   select(selected);
 }
@@ -154,7 +167,8 @@ async function addGadget(kind,pos) {
   if(!scene||scene.gadgets[kind]||pythonConnected) return;
   place(kind,(pos||defaults[kind]).x,(pos||defaults[kind]).y); select(kind); await saveScene();
   renderScene(scene);
-  if(innerWidth>640) fitStage(); else $('gadget-'+kind).scrollIntoView({block:'nearest',inline:'nearest'});
+  $('gadgetPicker').close();
+  fitStage();
 }
 for(const button of document.querySelectorAll('[data-add]')) {
   button.onclick=()=>addGadget(button.dataset.add);
@@ -170,10 +184,8 @@ $('stage').ondrop=event=>{
   const kind=event.dataTransfer.getData('text/plain'), rect=$('stage').getBoundingClientRect();
   if(defaults[kind]) addGadget(kind,{x:(event.clientX-rect.left)/stageZoom,y:(event.clientY-rect.top)/stageZoom});
 };
-$('remove').onclick=async()=>{
-  if(selected==='cjp'||pythonConnected||!scene) return;
-  delete scene.gadgets[selected]; renderScene(scene); await saveScene();
-};
+async function removeGadget(kind){if(kind==='cjp'||pythonConnected||window.CodyLiveStore.simState().connected||!scene)return;delete scene.gadgets[kind];renderScene(scene);await saveScene();}
+for(const cross of document.querySelectorAll('[data-remove]')){cross.onpointerdown=event=>event.stopPropagation();cross.onclick=event=>{event.stopPropagation();removeGadget(cross.dataset.remove);};}
 for(const item of document.querySelectorAll('.stage-item')) {
   const handle=item.querySelector('.handle');
   item.onpointerdown=()=>{select(item.dataset.kind);item.style.zIndex=++z;};
@@ -186,7 +198,7 @@ for(const item of document.querySelectorAll('.stage-item')) {
     if(!dragging||dragging.kind!==item.dataset.kind) return;
     place(dragging.kind,dragging.position.x+(event.clientX-dragging.x)/stageZoom,dragging.position.y+(event.clientY-dragging.y)/stageZoom);
   };
-  handle.onpointerup=handle.onpointercancel=()=>{if(dragging){dragging=null;saveScene();}};
+  handle.onpointerup=handle.onpointercancel=handle.onlostpointercapture=()=>{if(dragging){dragging=null;saveScene();}};
   handle.onkeydown=event=>{
     const delta={ArrowLeft:[-8,0],ArrowRight:[8,0],ArrowUp:[0,-8],ArrowDown:[0,8]}[event.key];
     if(delta&&scene){event.preventDefault();const p=scene.gadgets[item.dataset.kind];place(item.dataset.kind,p.x+delta[0],p.y+delta[1]);saveScene();}
@@ -215,6 +227,9 @@ $('cloudApply').onclick=async()=>{
   catch(error){showError(error.message);}
 };
 
+$('motionValue').onchange=()=>{scene.motion=$('motionValue').checked;saveScene();};
+$('rfidValue').onchange=()=>{const uid=$('rfidValue').value.toUpperCase();if(!/^[0-9A-F]{8}$/.test(uid)){showError('RFID UID must contain 8 hex characters');return;}scene.rfid=uid;saveScene();};
+$('ultraDistanceValue').onchange=()=>{const value=Number($('ultraDistanceValue').value);if(!Number.isFinite(value)||value<2||value>400){showError('Distance must be 2–400 cm');return;}scene.ultraDistance=value;saveScene();};
 const matrixPixels=[];
 for(let i=0;i<64;i++){const el=document.createElement('div');el.className='matrix-pixel';$('matrixPixels').append(el);matrixPixels.push(el);}
 let matrix={mode:'pixels',pixels:Array(64).fill(0)}, matrixRevision=-1, matrixStarted=0, raster=null;
@@ -248,14 +263,14 @@ requestAnimationFrame(animateMatrix);
 select('cjp');
 async function poll() {
   try {
-    const reply = await fetch('/state', {cache:'no-store', signal:AbortSignal.timeout(2000)});
+    const reply = await localFetch('/state', {cache:'no-store', signal:AbortSignal.timeout(2000)});
     if (!reply.ok) throw new Error(); const state = await reply.json();
-    $('connection').textContent = 'Service online'; $('python').textContent = state.connected ? 'Connected' : 'Waiting';
+    $('python').textContent = state.connected ? 'Connected' : 'Waiting';
     pythonConnected=state.connected;
     if(!dragging&&!pending&&!temperatureTimer) {renderScene(state.scene);$('saved').textContent='Saved';}
-    if(!initialFit&&scene){initialFit=true;if(innerWidth>640)fitStage();}
+    if(!initialFit&&scene&&viewport.clientWidth>0&&viewport.clientHeight>0){initialFit=true;fitStage();}
     for(const button of document.querySelectorAll('[data-add]')) button.disabled=state.connected||!!scene?.gadgets[button.dataset.add];
-    $('remove').disabled=selected==='cjp'||state.connected;
+    for(const cross of document.querySelectorAll('[data-remove]'))cross.disabled=state.connected;$('addGadgets').disabled=state.connected;
     if(state.error) showError(state.error);
     matrixUpdate(state.matrix);
     $('direction').textContent = state.states.join(' + ') || 'Neutral';
@@ -263,7 +278,7 @@ async function poll() {
     $('wifiState').textContent=state.wifi.wifi===3?'Connected':'Disconnected';$('iotState').textContent=state.wifi.iot===1?'Connected':'Disconnected';
     $('wifiSSID').textContent=state.wifi.ssid||'Not configured';
     $('cloudValues').textContent=state.wifi.slots.map(slot=>`${slot.type}[${slot.index}] = ${slot.value}`).join('\n')||'No values';
-    displayNumber(state.seven_segment || '');
+    displayNumber(state.seven_segment || '');$('ultraSegmentValue').textContent=state.ultra_segment||'Blank';
     if(!state.scene.gadgets.seven) $('displayValue').textContent='Not added';
     state.leds.forEach((color,id) => {const el=leds.get(id); el.style.background=color; el.style.boxShadow=color === '#000000' ? 'none' : `0 0 12px ${color}`; el.style.color=color === '#000000' ? '#9ba89f' : '#101b15';});
     if (!state.connected) {stopTone(); $('note').textContent='Silent';}
@@ -278,7 +293,7 @@ async function poll() {
     $('note').textContent=recent && state.now < recent.at+recent.duration/1000 ? `${recent.frequency} Hz` : 'Silent';
     online = true;
     if ((active||standaloneActive) && Date.now()-lastInput>250) {lastInput=Date.now();if(active)await input(active);if(standaloneActive)await input(standaloneActive,'joystick');}
-  } catch {online=false; stopTone(); $('connection').textContent='Service disconnected'; $('python').textContent='Unknown';}
+  } catch {online=false; stopTone(); showError('Simulator unavailable. Reload this page to retry.'); $('python').textContent='Unknown';}
   setTimeout(poll, 50);
 }
 poll();

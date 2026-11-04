@@ -33,8 +33,8 @@ generated.general=vm.runInContext('Blockly.serialization.workspaces.load(project
 assert(!generated.general.includes('cody = CN()') && !generated.general.includes('simulator = Simulator()'),'Logging must not discover physical ports');
 assert(generated.general.includes('log("cody simulator")'),'Text must not be rewritten during routing');
 const routing=require('../components/ide/blocks/routing.js');
-assert(!routing.supportsSimulation({python:'RFID_Reader.readuid(cody)'}));
-assert.throws(()=>routing.template({getFieldValue:()=> 'SIMULATION'},{type:'rfid',python:'RFID_Reader.readuid(cody)'}),/unavailable/);
-assert.throws(()=>routing.template({getFieldValue:n=>n==='TARGET'?'SIMULATION':"'ULTRASEG'"},{type:'seven',python:'Seven_Segment.display(cody, {device}, {value})'}),/Standalone/);
+assert(routing.supportsSimulation({python:'RFID_Reader.readuid(cody)'}));
+assert.throws(()=>routing.template({getFieldValue:()=> 'SIMULATION'},{type:'custom',python:'Unknown_Gadget.read(cody)'}),/unavailable/);
+assert.throws(()=>routing.template({getFieldValue:n=>n==='TARGET'?'SIMULATION':'3'},{type:'seven',python:'Seven_Segment.display(cody, {device}, {value})'}),/Standalone/);
 if(process.argv[2])fs.writeFileSync(process.argv[2],JSON.stringify(generated,null,2));
 console.log('PASS: actual Blockly native Python generator, mixed routing, old default, target serialization, general/orphan isolation and unsupported device checks');

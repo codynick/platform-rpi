@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.14.0-simulator-assets - 2026-11-03
+
+- Bring the server 3.20.4 simulator appearance, gadget/asset pickers, viewport and artwork to the RPi tool and embedded Simulation space.
+- Add hot/cold cups and draggable probes, adjustable ultrasonic targets/aim, soil pots with sand/loam/clay and watering cans with soaking, drainage and overflow.
+- Port matching sensor model rules to the native simulator service, so Python readings continue without a browser. Preserve shared scenes, validate edits and merge independent view changes without resetting model evolution.
+- Add motion, RFID and UltraSeg native simulation and Blockly targets. Preserve physical gadget drivers and existing dashboard tools.
+- Keep existing manual scene values/layout and preserve a one-time pre-assets backup; new worlds persist through service restarts.
+- Add the native world_assets.py dashboard experiment, model parity tests, protocol tests and real Chrome asset/combined-space checks. Physical Pi/hardware validation remains pending.
+- Seal a new immutable release while retaining previous manifests/tags and the 0.13.0 upgrade/rollback target.
+
 ## 0.13.0-block-spaces - 2026-11-03
 
 - Integrate the existing Simulation, Dashboard and Sprites tools beside Blockly with show/hide, keyboard tab navigation, compact embedded views and separate-tool links.
