@@ -1,5 +1,13 @@
 # CodyNick Blockly PHP IDE
 
+## RPi 0.13.0: integrated spaces
+
+Use Simulation, Dashboard and Sprites beside the blocks, or Hide/Show Spaces.
+Supported gadget blocks select Hardware or Simulation independently; mixed programs
+run as native Python through the existing Pi services. Old designs default to
+Hardware. Use Examples for three prepared projects. See [SPACES.md](SPACES.md) for
+setup, supported gadgets, examples, save behavior and limits.
+
 Blockly is bundled under `vendor/blockly`, so the editor works while the Raspberry Pi
 hotspot has no internet connection.
 
@@ -48,7 +56,7 @@ The IDE loads all `*.json` files in this folder.
 
 ## Notes
 
-The browser loads Blockly from a CDN. For a fully offline deployment, download Blockly locally and replace the script URLs in `index.php`.
+Blockly is bundled locally under `vendor/blockly`; the editor does not require a CDN.
 
 
 ## Revised UI notes

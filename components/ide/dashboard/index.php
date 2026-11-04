@@ -402,9 +402,9 @@ body {
     .card-span-2, .card-span-3, .card-span-4 { grid-column: span 1; }
 }
 </style>
-<link rel="stylesheet" href="enhancements.css?v=0.12.1">
+<link rel="stylesheet" href="enhancements.css?v=0.13.0">
 <link rel="icon" type="image/x-icon" href="/assets/favicon.ico"><link rel="stylesheet" href="/assets/tool-navigation.css"></head>
-<body>
+<body class="<?= ($_GET['embedded'] ?? '') === '1' ? 'embedded' : '' ?>">
 
 <header class="header">
     <a class="codynick-home-button" href="/">Main Panel</a>
@@ -431,8 +431,8 @@ body {
     </div>
 </main>
 
-<script src="layout-model.js?v=0.12.1"></script>
-<script src="enhancements.js?v=0.12.1"></script>
+<script src="layout-model.js?v=0.13.0"></script>
+<script src="enhancements.js?v=0.13.0"></script>
 <script>
 const POLL_INTERVAL_MS = <?= (int)$poll_interval_ms ?>;
 const grid = document.getElementById('dashboardGrid');

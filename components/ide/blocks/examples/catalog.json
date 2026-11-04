@@ -1,0 +1,20 @@
+[
+  {
+    "id": "simulation-temperature",
+    "title": "Simulation: temperature and light",
+    "space": "simulation",
+    "description": "No hardware. Before Run, add Temperature in Simulation. Change it across 25 C: simulated LED 0 is red above 25, green otherwise."
+  },
+  {
+    "id": "mixed-worlds",
+    "title": "Hardware + Simulation: crossed lights",
+    "space": "simulation",
+    "description": "Requires a real CJP and temperature sensor. Add Temperature in Simulation before Run. The real sensor controls simulated LED 0; simulated temperature controls real LED 0 (red above 25 C, green otherwise)."
+  },
+  {
+    "id": "simulation-sprite",
+    "title": "Simulation + Sprites: joystick pilot",
+    "space": "simulation",
+    "description": "No hardware. Run, then hold the simulated CJP joystick Right to move the rocket. Switch to Sprites to see it; switching spaces releases the joystick."
+  }
+]

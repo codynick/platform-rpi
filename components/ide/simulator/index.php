@@ -17,5 +17,6 @@ if (strlen($token) < 32 || !$validHost) {
 if (strpos($address, ':') !== false) $address = '[' . $address . ']';
 header('Cache-Control: no-store');
 header('Referrer-Policy: no-referrer');
-header('Location: http://' . $address . ':8091/?token=' . rawurlencode($token), true, 302);
+header('Location: http://' . $address . ':8091/?token=' . rawurlencode($token)
+    . (($_GET['embedded'] ?? '') === '1' ? '&embedded=1' : ''), true, 302);
 exit;

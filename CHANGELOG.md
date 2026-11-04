@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.13.0-block-spaces - 2026-11-03
+
+- Integrate the existing Simulation, Dashboard and Sprites tools beside Blockly with show/hide, keyboard tab navigation, compact embedded views and separate-tool links.
+- Add per-supported-gadget Hardware/Simulation targets, mixed native Python generation, connection cleanup, safe old Hardware defaults and no physical discovery for simulation/general/sprite-only programs. Exclude unattached/disabled blocks.
+- Keep unsupported devices and unknown custom APIs Hardware-only; reject unsupported simulated device selections instead of falling back to physical hardware.
+- Release simulator/dashboard/sprite momentary inputs when their spaces are hidden, and retain target/space selections with existing saves and transfers.
+- Add three block examples, an Examples chooser and an all-spaces Python companion. Preserve the simulator scene separately rather than replacing it on example load.
+- Add actual Blockly generator/native transport regressions and real PHP/MySQL/simulator/sprite Chrome checks, while retaining dashboard regressions. Physical Pi/hardware acceptance remains pending.
+- Publish a new immutable release/pins, keep 0.12.1 upgrade and rollback targets and preserve existing technology, physical drivers, firmware, AI models and network behavior.
+
 ## 0.12.1-dashboard-handles - 2026-11-03
 
 - Move cards by dragging their headers and resize from a bottom-right corner grip, without a separate Move/Resize toolbar.

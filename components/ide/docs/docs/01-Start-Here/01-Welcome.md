@@ -30,3 +30,14 @@ CodyNick hotspot.
 Student work belongs in the normal user folders. **CodyNick Examples** is managed by
 the installer and is replaced during every repair or upgrade.
 
+
+## Block Coding spaces
+
+Block Coding includes Simulation, Dashboard and Sprites beside the workspace. Use
+Hide/Show Spaces to expand or restore it. Supported gadget blocks choose Hardware
+or Simulation independently, and can mix both in one program. Old designs default
+to Hardware. Examples provides simulated temperature/light, crossed real/simulated
+lights and simulated joystick/sprite projects. Add required simulated gadgets
+before Run; stop before adding/removing them. Dashboard displays the existing shared
+cards and keeps its header dragging and corner resizing. The all-spaces Python
+companion is `CodyNick examples/blocks/spaces_dashboard.py` (no hardware required).

@@ -22,3 +22,11 @@ dl{margin:28px 0;display:grid;grid-template-columns:80px 1fr;gap:16px 4px;font-s
 .wifi-device{width:330px}.wifi-device>img{height:116px;object-fit:cover;object-position:50% 62%}.sim-label{font-size:10px;color:#156d50;margin:10px 0}.network-controls{display:grid;gap:8px;font-size:12px}.network-controls input{accent-color:#157c5b}.wifi-status{display:grid;margin:12px 0;gap:6px;font-size:12px;grid-template-columns:56px 1fr}.cloud-editor{display:grid;grid-template-columns:1fr 65px;gap:8px}.cloud-editor label{display:grid;gap:4px;font-size:11px}.cloud-editor .cloud-value{grid-column:1/-1}.cloud-editor input,.cloud-editor select{width:100%;min-width:0;padding:5px;border:1px solid #b4c4ba;border-radius:4px;font:inherit}.cloud-editor button{grid-column:1/-1;padding:5px;font-size:12px}#cloudValues{font:11px/1.5 monospace;max-height:96px;overflow:auto;margin:12px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
 @media(max-width:640px){.toolbox{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}.tool{width:100%;min-height:42px}.tool img{width:22px;height:28px}.tool span{font-size:10px}.toolbox .tool:nth-child(7){grid-column:auto}}
 #stage{height:1500px}
+
+/* Embedded mode keeps existing gadget controls and stage, without duplicate navigation. */
+body.embedded>header{display:none}
+body.embedded>main{height:100dvh}
+body.embedded aside{padding:8px}
+body.embedded aside h1{font-size:14px}
+body.embedded .toolbar{flex-wrap:wrap;height:auto;min-height:46px;padding:6px;gap:6px}
+body.embedded .toolbox{gap:4px}

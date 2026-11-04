@@ -623,7 +623,7 @@ if ($api === 'run') {
       }
     }
   </style>
-<link rel="icon" type="image/x-icon" href="/assets/favicon.ico"><link rel="stylesheet" href="/assets/tool-navigation.css"><link rel="stylesheet" href="/blocks/stage.css"></head>
+<link rel="icon" type="image/x-icon" href="/assets/favicon.ico"><link rel="stylesheet" href="/assets/tool-navigation.css"><link rel="stylesheet" href="/blocks/stage.css"><link rel="stylesheet" href="/blocks/spaces.css?v=0.13.0"></head>
 <body>
 <div class="app">
   <header class="topbar">
@@ -636,7 +636,7 @@ if ($api === 'run') {
     </div>
 
     <nav class="toolbar">
-      <button id="stageToggle" aria-expanded="true" title="Show or hide sprite stage">Stage</button>
+      <button id="stageToggle" aria-expanded="true" title="Show or hide Simulation, Dashboard and Sprites">Hide Spaces</button>
       <a class="codynick-home-button" href="/">Main Panel</a>
       <button onclick="newWorkspace()" title="Clear the workspace">New</button>
       <label class="file-button" for="importFile" title="Upload a CodyNick design">Upload</label>
@@ -644,6 +644,7 @@ if ($api === 'run') {
       <button onclick="downloadWorkspace()" title="Download the current CodyNick design">Download</button>
       <button onclick="NamedDesigns.save()" title="Save named design on this device">Save</button>
       <button onclick="NamedDesigns.open()" title="Load a design saved on this device">Load</button>
+      <button id="blockExamplesButton" type="button">Examples</button>
       <button onclick="viewPython()" title="Preview generated Python in a pop-up">View Python</button>
       <button id="blockRunBtn" class="run-btn" onclick="runProgram()" title="Generate Python and start script">▶ Run</button>
       <button id="blockStopBtn" class="stop-btn" onclick="stopProgram()" title="Stop running script">&#9632; Stop</button>
@@ -666,7 +667,20 @@ if ($api === 'run') {
       </div>
     </section>
 
-    <aside class="sprite-panel" aria-label="Sprite stage">
+    <aside id="liveSpaces" class="sprite-panel live-spaces" aria-label="Program spaces">
+      <div class="space-links"><a href="/simulator/" target="_blank" rel="noopener">Open Simulator ↗</a><a href="/dashboard/" target="_blank" rel="noopener">Open Dashboard ↗</a></div>
+      <nav class="space-tabs" role="tablist" aria-label="Program spaces">
+        <button id="space-simulation" role="tab" aria-controls="space-panel-simulation" aria-selected="false">Simulation</button>
+        <button id="space-dashboard" role="tab" aria-controls="space-panel-dashboard" aria-selected="false">Dashboard</button>
+        <button id="space-sprites" role="tab" aria-controls="space-panel-sprites" aria-selected="true">Sprites</button>
+      </nav>
+      <section id="space-panel-simulation" class="space-view" role="tabpanel" aria-labelledby="space-simulation" hidden>
+        <iframe id="simulatorFrame" title="Gadget simulation" data-src="/simulator/?embedded=1" referrerpolicy="no-referrer" allow="autoplay"></iframe>
+      </section>
+      <section id="space-panel-dashboard" class="space-view" role="tabpanel" aria-labelledby="space-dashboard" hidden>
+        <iframe id="dashboardFrame" title="Live dashboard" data-src="/dashboard/?embedded=1" referrerpolicy="no-referrer"></iframe>
+      </section>
+      <section id="space-panel-sprites" class="space-view" role="tabpanel" aria-labelledby="space-sprites">
       <div class="sprite-toolbar"><h2>Stage</h2><button id="spriteReset" title="Reset sprite to saved starting position">Reset</button></div>
       <canvas id="spriteCanvas" class="sprite-canvas" width="480" height="360" tabindex="0" aria-label="Sprite stage; arrow keys and space" title="Click to focus keyboard input"></canvas>
       <div class="sprite-readout"><span id="spriteXReadout">x: 0</span><span id="spriteYReadout">y: 0</span><span id="spriteStatus">Connecting</span></div>
@@ -677,6 +691,7 @@ if ($api === 'run') {
         <label>Start size (%)<input id="sprite_size" type="number" min="10" max="300" step="1" value="100"></label>
         <label class="wide">Backdrop<select id="sprite_backdrop"><option value="white">White</option><option value="sky">Sky</option><option value="field">Field</option></select></label>
       </div>
+      </section>
     </aside>
   </main>
 </div>
@@ -703,7 +718,15 @@ if ($api === 'run') {
   <div class="design-actions"><button id="designDelete" class="design-delete" onclick="NamedDesigns.remove()" disabled>Delete</button><button onclick="document.getElementById('designDialog').close()">Cancel</button><button id="designLoadConfirm" onclick="NamedDesigns.load()">Load</button></div>
 </dialog>
 
-<script src="/blocks/stage.js"></script>
+<dialog id="blockExamples" class="design-dialog" aria-labelledby="blockExamplesTitle">
+  <h2 id="blockExamplesTitle">Example Projects</h2>
+  <select id="blockExampleList" size="5" aria-label="Choose an example"></select>
+  <p id="blockExampleDescription"></p>
+  <div class="design-actions"><button type="button" onclick="document.getElementById('blockExamples').close()">Cancel</button><button id="blockExampleLoad" type="button">Load example</button></div>
+</dialog>
+<script src="/blocks/routing.js?v=0.13.0"></script>
+<script src="/blocks/spaces.js?v=0.13.0"></script>
+<script src="/blocks/stage.js?v=0.13.0"></script>
 <script src="/blocks/designs.js?v=0.12.0"></script>
 <script>
 const BLOCK_PACKAGES = <?= json_encode($BLOCK_PACKAGES, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
@@ -833,12 +856,15 @@ function buildDynamicBlockJson(spec) {
     }
   }
 
+  const routable=BlockRouting.usesConnection(spec);
+  if(routable)args0.push({type:'field_dropdown',name:'TARGET',options:BlockRouting.supportsSimulation(spec)
+    ? [['Hardware','HARDWARE'],['Simulation','SIMULATION']] : [['Hardware','HARDWARE']]});
   const json = {
     type: spec.type,
-    message0: spec.label,
+    message0: spec.label + (routable ? ' · %'+args0.length : ''),
     args0,
     colour: spec.colour || '#4c97ff',
-    tooltip: spec.tooltip || '',
+    tooltip: (spec.tooltip || '') + (routable && !BlockRouting.supportsSimulation(spec) ? ' Hardware only: this gadget has no simulator implementation.' : ''),
     helpUrl: ''
   };
 
@@ -1176,8 +1202,12 @@ function stackToCode(block) {
   return code;
 }
 
+function blockEnabled(block) {
+  return !!block && block.isEnabled() && !block.getInheritedDisabled();
+}
+
 function blockToPythonValue(block) {
-  if (!block) return 'None';
+  if (!blockEnabled(block)) return 'None';
   const spriteValue = SpritePrototype.value(block);
   if (spriteValue !== null) return spriteValue;
   if (block.type === 'cn_timer_value') return '(time.monotonic() - _codynick_timer_start)';
@@ -1255,7 +1285,7 @@ function blockToPythonValue(block) {
 }
 
 function blockToPythonStatement(block) {
-  if (!block) return '';
+  if (!blockEnabled(block)) return '';
   const spriteStatement = SpritePrototype.statement(block, valueToCode);
   if (spriteStatement !== null) return spriteStatement;
   if (block.type === 'cn_timer_reset') return '_codynick_timer_start = time.monotonic()\n';
@@ -1325,7 +1355,7 @@ function blockToPythonStatement(block) {
 
 function renderDynamicBlock(block) {
   const spec = dynamicBlockSpecs.get(block.type);
-  let code = String(spec.python || '');
+  let code = BlockRouting.template(block,spec);
 
   for (const arg of (spec.args || [])) {
     const raw = blockFieldValue(block, arg);
@@ -1337,10 +1367,11 @@ function renderDynamicBlock(block) {
 }
 
 function generatePython() {
-  const allBlocks = workspace.getAllBlocks(false);
+  const topBlocks = workspace.getTopBlocks(true).filter(blockEnabled);
+  const allBlocks=topBlocks.filter(block=>['cn_event_start','cn_event_loop'].includes(block.type))
+    .flatMap(block=>block.getDescendants(false)).filter(blockEnabled);
   const usesStage = allBlocks.some(block => block.type.startsWith('sprite_'));
-  const usesHardware = allBlocks.some(block => dynamicBlockSpecs.has(block.type));
-  const topBlocks = workspace.getTopBlocks(true);
+  const routes=BlockRouting.plan(allBlocks,dynamicBlockSpecs);
   const startBlocks = topBlocks.filter(b => b.type === 'cn_event_start');
   const loopBlocks = topBlocks.filter(b => b.type === 'cn_event_loop');
 
@@ -1368,18 +1399,23 @@ function generatePython() {
     '',
     '_codynick_timer_start = time.monotonic()',
     usesStage ? SpritePrototype.initialization() : '',
-    usesHardware ? 'cody = CN()' : 'cody = None',
+    'cody = None',
+    'simulator = None',
     '',
     'try:',
+    routes.hardware ? indent('cody = CN()') : '',
+    routes.simulation ? indent('simulator = Simulator()') : '',
     indent('# When CodyNick starts'),
     indent(startCode),
     indent('# Main Loop'),
     indent('while True:\n' + indent(loopCode)),
     'finally:',
-    '    try:',
-    '        cody.close()',
-    '    except Exception:',
-    '        pass',
+    '    for _connection in (simulator, cody):',
+    '        if _connection is not None:',
+    '            try:',
+    '                _connection.close()',
+    '            except Exception:',
+    '                pass',
     ''
   ].join('\n');
 }
@@ -1574,6 +1610,7 @@ async function loadServerWorkspace() {
 initBlockly();
 SpritePrototype.initialize();
 NamedDesigns.initialize();
+BlockSpaces.initialize();
 loadServerWorkspace();
 </script>
 </body>

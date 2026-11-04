@@ -352,3 +352,13 @@ Incorrect string value:
 ```
 
 The incorrect version would generate invalid Python unless `CJP` is a defined variable.
+
+## RPi Hardware/Simulation targets (0.13.0)
+
+Templates containing the connection identifier `cody` receive a target field.
+Known API families supported by the existing simulator can select Hardware or
+Simulation; unknown families remain Hardware-only. The generator replaces the
+connection identifier in the trusted template before inserting user arguments,
+so user text is preserved. Do not implement target switching inside Python driver
+methods or change physical serial behavior. See SPACES.md for supported families
+and device limits. General templates without a connection do not open hardware.

@@ -22,6 +22,8 @@ jobs:
         run: node tests/test_ansi.cjs
       - name: Dashboard graph regression
         run: node tests/test_dashboard_graph.cjs
+      - name: Blockly mixed-target generator regression
+        run: node tests/block_generator.cjs
       - name: Dashboard PHP/MySQL and native Python integration
         env:
           MYSQL_TEST_USER: dashboard_test

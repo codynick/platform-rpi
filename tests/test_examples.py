@@ -11,6 +11,28 @@ EXAMPLES = Path(__file__).resolve().parents[1] / 'components/examples'
 
 
 class ExampleTests(unittest.TestCase):
+    def test_all_spaces_python_companion_uses_simulator_and_closes_connection(self):
+        connection=MagicMock()
+        simulator=MagicMock(return_value=connection)
+        temperature=types.SimpleNamespace(read=MagicMock(return_value=21.1))
+        rgb=types.SimpleNamespace(set=MagicMock())
+        stage=MagicMock();stage_factory=MagicMock(return_value=stage)
+        cards={}
+        def card(kind,title,**options):
+            cards[title]=MagicMock();return cards[title]
+        dashboard=types.SimpleNamespace(clear=MagicMock(),Card=card)
+        with patch.dict('sys.modules',{'Dashboard':dashboard,
+            'CodyNick':types.SimpleNamespace(Simulator=simulator,Temperature_Sensor=temperature,RGB_Matrix=rgb),
+            'SpriteStage':types.SimpleNamespace(SpriteStage=stage_factory)}), \
+             patch('time.sleep',side_effect=KeyboardInterrupt), self.assertRaises(KeyboardInterrupt):
+            runpy.run_path(str(EXAMPLES/'blocks/spaces_dashboard.py'))
+        simulator.assert_called_once_with()
+        temperature.read.assert_called_once_with(connection)
+        rgb.set.assert_called_once_with(connection,0,'#00FF00')
+        stage.say.assert_called_once_with('Comfortable')
+        cards['Simulated temperature'].set.assert_called_once_with(21.1)
+        connection.close.assert_called_once_with()
+
     def test_dashboard_feature_example_updates_cards_and_saves_source_bundle(self):
         cards = {}
 

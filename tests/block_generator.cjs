@@ -1,0 +1,40 @@
+// Execute the shipped generator against real headless Blockly, without an editor DOM.
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..'),blocks=path.join(root,'components/ide/blocks');
+const element={value:'',textContent:'',style:{},classList:{add(){},remove(){},contains(){return false;}},addEventListener(){},setAttribute(){},getContext(){return {};}};
+const ctx={console,setTimeout:()=>0,clearTimeout(){},setInterval:()=>0,Image:class{},document:{getElementById:()=>element,addEventListener(){}},addEventListener(){}};
+ctx.window=ctx;vm.createContext(ctx);
+for(const file of ['vendor/blockly/blockly.min.js','routing.js','stage.js'])vm.runInContext(fs.readFileSync(path.join(blocks,file),'utf8'),ctx);
+ctx.BLOCK_PACKAGES=[JSON.parse(fs.readFileSync(path.join(blocks,'blocks/codynick_core.json'),'utf8'))];ctx.BLOCK_WARNINGS=[];
+const source=fs.readFileSync(path.join(blocks,'index.php'),'utf8');
+vm.runInContext(source.slice(source.indexOf('let workspace = null;'),source.lastIndexOf('\ninitBlockly();')),ctx);
+vm.runInContext('Blockly.inject=()=>new Blockly.Workspace();initBlockly();SpritePrototype.initialize();',ctx);
+const generated={};
+for(const name of ['simulation-temperature','mixed-worlds','simulation-sprite']) {
+ ctx.project=JSON.parse(fs.readFileSync(path.join(blocks,'examples',name+'.codynick'),'utf8'));
+ generated[name]=vm.runInContext('Blockly.serialization.workspaces.load(project,workspace);generatePython();',ctx);
+ const restored=JSON.parse(vm.runInContext('JSON.stringify(currentWorkspaceJson())',ctx));
+ assert(JSON.stringify(restored).includes('SIMULATION'),'Targets must survive serialization');
+}
+assert(!generated['simulation-temperature'].includes('cody = CN()'));
+assert(generated['simulation-temperature'].includes('simulator = Simulator()'));
+assert(generated['mixed-worlds'].includes('cody = CN()') && generated['mixed-worlds'].includes('simulator = Simulator()'));
+assert(generated['mixed-worlds'].includes('Temperature_Sensor.read(cody)') && generated['mixed-worlds'].includes('Temperature_Sensor.read(simulator)'));
+assert(generated['simulation-sprite'].includes('SpriteStage('));
+ctx.project=JSON.parse(fs.readFileSync(path.join(blocks,'examples/simulation-temperature.codynick'),'utf8'));
+assert(!vm.runInContext("Blockly.serialization.workspaces.load(project,workspace);workspace.getTopBlocks(false).find(b=>b.type==='cn_event_loop').setDisabledReason(true,'test');generatePython();",ctx).includes('simulator = Simulator()'),'Disabled program trees must not open connections');
+ctx.project={blocks:{languageVersion:0,blocks:[{type:'cn_event_loop',inputs:{DO:{block:{type:'cn_rgb_matrix_set',fields:{led:0,color:'#FF0000'}}}}}]}};
+generated.legacy=vm.runInContext('Blockly.serialization.workspaces.load(project,workspace);generatePython();',ctx);
+assert(generated.legacy.includes('cody = CN()') && !generated.legacy.includes('simulator = Simulator()'),'Old blocks retain Hardware default');
+vm.runInContext("workspace.newBlock('cn_rgb_matrix_set').setFieldValue('SIMULATION','TARGET')",ctx);
+assert(!vm.runInContext('generatePython()',ctx).includes('simulator = Simulator()'),'Orphans must not open connections');
+ctx.project={blocks:{languageVersion:0,blocks:[{type:'cn_event_start',inputs:{DO:{block:{type:'cn_log',fields:{message:'cody simulator'}}}}}]}};
+generated.general=vm.runInContext('Blockly.serialization.workspaces.load(project,workspace);generatePython();',ctx);
+assert(!generated.general.includes('cody = CN()') && !generated.general.includes('simulator = Simulator()'),'Logging must not discover physical ports');
+assert(generated.general.includes('log("cody simulator")'),'Text must not be rewritten during routing');
+const routing=require('../components/ide/blocks/routing.js');
+assert(!routing.supportsSimulation({python:'RFID_Reader.readuid(cody)'}));
+assert.throws(()=>routing.template({getFieldValue:()=> 'SIMULATION'},{type:'rfid',python:'RFID_Reader.readuid(cody)'}),/unavailable/);
+assert.throws(()=>routing.template({getFieldValue:n=>n==='TARGET'?'SIMULATION':"'ULTRASEG'"},{type:'seven',python:'Seven_Segment.display(cody, {device}, {value})'}),/Standalone/);
+if(process.argv[2])fs.writeFileSync(process.argv[2],JSON.stringify(generated,null,2));
+console.log('PASS: actual Blockly native Python generator, mixed routing, old default, target serialization, general/orphan isolation and unsupported device checks');

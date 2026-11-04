@@ -1,0 +1,80 @@
+{
+  "codynick_design": {
+    "name": "Simulation + Sprites: joystick pilot"
+  },
+  "codynick_spaces": {
+    "selected": "simulation",
+    "visible": true
+  },
+  "codynick_stage": {
+    "x": 0,
+    "y": 0,
+    "direction": 90,
+    "size": 100,
+    "backdrop": "sky"
+  },
+  "blocks": {
+    "languageVersion": 0,
+    "blocks": [
+      {
+        "type": "cn_event_start",
+        "inputs": {
+          "DO": {
+            "block": {
+              "type": "cn_log",
+              "fields": {
+                "message": "Simulation + Sprites: joystick pilot"
+              }
+            }
+          }
+        },
+        "x": 30,
+        "y": 30
+      },
+      {
+        "type": "cn_event_loop",
+        "inputs": {
+          "DO": {
+            "block": {
+              "type": "controls_if",
+              "inputs": {
+                "IF0": {
+                  "block": {
+                    "type": "cn_joystick_position",
+                    "fields": {
+                      "device": "'CJP'",
+                      "pos": "'right'",
+                      "TARGET": "SIMULATION"
+                    }
+                  }
+                },
+                "DO0": {
+                  "block": {
+                    "type": "sprite_change_x",
+                    "inputs": {
+                      "AMOUNT": {
+                        "block": {
+                          "type": "math_number",
+                          "fields": {
+                            "NUM": 5
+                          }
+                        }
+                      }
+                    },
+                    "next": {
+                      "block": {
+                        "type": "sprite_bounce"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x": 30,
+        "y": 150
+      }
+    ]
+  }
+}

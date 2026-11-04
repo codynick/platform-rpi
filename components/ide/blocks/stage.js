@@ -3,6 +3,7 @@ const SpritePrototype = (() => {
   let settings = {x:0,y:0,direction:90,size:100,backdrop:'white'};
   let state = {...settings,visible:true,speech:''};
   let pending = false;
+  let releaseInputs=()=>{};
   const held = new Set();
   const mouse = {x:0,y:0,down:false};
   const canvas = document.getElementById('spriteCanvas');
@@ -198,6 +199,7 @@ const SpritePrototype = (() => {
     canvas.onkeydown=event=>{if(keys[event.key]){event.preventDefault();held.add(keys[event.key]);}};
     canvas.onkeyup=event=>{if(keys[event.key]){event.preventDefault();held.delete(keys[event.key]);}};
     const release=()=>{held.clear();mouse.down=false;request({action:'keys',keys:[],mouse}).catch(()=>{});};
+    releaseInputs=release;
     canvas.onblur=release;window.addEventListener('blur',release);
     document.addEventListener('visibilitychange',()=>{if(document.hidden)release();});
     setInterval(async()=>{
@@ -208,5 +210,5 @@ const SpritePrototype = (() => {
     },100);
     updateControls();request().catch(error=>{document.getElementById('spriteStatus').textContent=error.message;});
   }
-  return {definitions,categories,value,statement,initialization,initialize};
+  return {definitions,categories,value,statement,initialization,initialize,releaseInputs:()=>releaseInputs()};
 })();

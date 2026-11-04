@@ -1,5 +1,7 @@
 'use strict';
-history.replaceState(null, '', '/');
+const embedded=new URLSearchParams(location.search).get('embedded')==='1';
+if(embedded)document.body.classList.add('embedded');
+history.replaceState(null, '', embedded?'/?embedded=1':'/');
 const $ = id => document.getElementById(id);
 const mainPanelUrl = new URL(window.location.href);
 mainPanelUrl.port = '';
@@ -94,6 +96,7 @@ for (const button of document.querySelectorAll('[data-state]')) {
 }
 function releaseInputs(){input('');if(scene?.gadgets.joystick)input('','joystick');stopTone();}
 window.addEventListener('blur',releaseInputs);
+window.addEventListener('message',event=>{if(event.source===window.parent && event.data?.type==='codynick-space-visibility' && event.data.visible===false)releaseInputs();});
 document.addEventListener('visibilitychange', () => {if (document.hidden)releaseInputs();});
 const labels={cjp:'CodyJoy Pro',seven:'Seven-segment',temperature:'Temperature sensor',matrix:'LED matrix',...Object.fromEntries(Object.entries(newGadgets).map(([key,value])=>[key,value.title]))};
 const defaults={seven:{x:440,y:40},temperature:{x:440,y:360},matrix:{x:760,y:360},joystick:{x:40,y:640},ultrasonic:{x:400,y:720},soil:{x:740,y:720},wifi:{x:1050,y:760}};

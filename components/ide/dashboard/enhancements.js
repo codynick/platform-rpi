@@ -192,6 +192,7 @@ const DashboardTools = (() => {
         window.addEventListener('blur',()=>{releaseAll();cancelGesture();});
         document.addEventListener('visibilitychange',()=>{if(document.hidden){releaseAll();cancelGesture();}});
         window.addEventListener('pagehide',releaseAll);
+        window.addEventListener('message',event=>{if(event.source===window.parent && event.data?.type==='codynick-space-visibility' && event.data.visible===false){releaseAll();cancelGesture();}});
         document.addEventListener('keydown',event=>{if(event.key==='Escape')cancelGesture();});
         setInterval(()=>{for(const id of held.keys())inputEvent(id,'renew');},400);
         new ResizeObserver(()=>{arrange();redraw();}).observe(gridElement());
