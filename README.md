@@ -51,10 +51,10 @@ This initial DHCP address can change. Do not assume it matches a previous SD car
 ## 3. Run the single setup command
 
 ```bash
-wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
+wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/advanced-ide/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
 ```
 
-The entry banner is **0.14.1** and its pinned network component reports **0.2.2**.
+The entry banner is **0.15.0** and its pinned network component reports **0.2.2**.
 On first installation, answer `y` to
 `Prepare this network handover? [y/N]`.
 
@@ -86,11 +86,11 @@ ssh admin@10.42.0.1
 From that SSH session, confirm within **15 minutes**:
 
 ```bash
-wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
+wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/advanced-ide/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
 ```
 
 Answer `y`. Success reports `Stage: network-ready` and disables rollback, then the
-same entry point starts application installation. Wait for `CodyNick 0.14.1: READY`
+same entry point starts application installation. Wait for `CodyNick 0.15.0: READY`
 before rebooting. No root password is set. The older internal network helper may
 still mention `--confirm`; the unified entry point invokes it for you.
 
@@ -138,12 +138,12 @@ or repeat the network handover.** Keep the external internet network available.
 Run these commands in the Pi's existing administrator SSH session at `10.42.0.1`:
 
 ```bash
-wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
+wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/advanced-ide/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
 ```
 
 Installation runs in the background, so closing SSH does not stop it. Do not reboot
 or power off until it finishes. The command automatically follows its log.
-Wait for **`CodyNick 0.14.1: READY`**, then press
+Wait for **`CodyNick 0.15.0: READY`**, then press
 `Ctrl+C` to leave the log display. If you see `INSTALLATION FAILED`, send the last
 30-50 log lines for diagnosis; do not continue as though installation succeeded.
 
@@ -258,7 +258,7 @@ student data separately before any deployment.
 To view the installed component versions and run health checks:
 
 ```bash
-sudo python3 /usr/local/lib/codynick/core-0.14.1/app_setup.py --check
+sudo python3 /usr/local/lib/codynick/core-0.15.0/app_setup.py --check
 ```
 
 For a compact version report and checksum status for every system example:
@@ -437,7 +437,7 @@ for supported gadgets, setup, saved-state behavior and known limits.
 
 Refresh existing editor/dashboard tabs after updating. Software/native/browser checks
 cover these changes; physical Raspberry Pi installation and hardware acceptance remain
-pending. Success reports **CodyNick 0.14.1: READY**. Use the same one-line setup command.
+pending. Success reports **CodyNick 0.15.0: READY**. Use the same one-line setup command.
 
 ## Server-style simulation assets (0.14.0)
 
@@ -453,11 +453,32 @@ Ultrasonic and Soil-moisture gadgets before Run, then add/move assets while runn
 See [the simulator guide](components/simulator/README.md) for setup and persistence.
 Physical Pi/gadget validation remains pending.
 
+## Advanced IDE (0.15.0)
+
+This branch adds **Advanced IDE** to the main panel. Use Blocks or Python beside
+Simulation, Dashboard and Sprites. Run uses the selected editor and the Pi's
+native script service. The Program Console displays the existing Pi log.
+
+Use File > Save Project or Download Project to keep both editors and the three
+spaces in one RPi project ZIP. Opening a complete project restores the Pi's
+shared spaces after confirmation. Legacy RPi Blockly exports can be uploaded.
+Server project archives contain runtime-specific state and are not interchangeable.
+
+Use this branch's setup command for an existing standard 0.14.1 Pi or a fresh
+supported installation. To return to standard 0.14.1, use the pinned selector:
+
+```bash
+wget -4 -O /tmp/codynick-standard.sh "https://raw.githubusercontent.com/codynick/platform-rpi/advanced-ide/setup-standard.sh?$(date +%s)" && sudo bash /tmp/codynick-standard.sh
+```
+
+The standard selector retains Advanced drafts and archives on disk for a future
+reinstall. Physical Pi installation and switch-back have not been exercised.
+
 ## Revision History
 
 ## Current version
 
-**Unified setup: 0.14.1; application: 0.14.1; network component: 0.2.2.**
+**Unified setup: 0.15.0; application: 0.15.0; network component: 0.2.2.**
 
 ## 0.14.0: Server-style Simulator Gadgets and Assets
 
@@ -596,7 +617,7 @@ python tools/select_release.py 0.9.10
 git diff -- setup.sh
 git add setup.sh
 git commit -m "Select original CodyNick 0.9.10 for rollback"
-git push origin HEAD:main
+git push origin HEAD:advanced-ide
 ```
 
 Select 0.9.9 or 0.9.8 the same way; select 0.10.0 to move forward again. This changes only the active target and its immutable tag/checksum; it does not rewrite Git history or move published tags. Do not revert the entire updater to an older incompatible script: retain the current stable engine and roll back the target selector instead. Do not run `seal_core_release.py` after selecting a rollback target, because that build tool selects the new release again.
@@ -680,7 +701,7 @@ install this firmware separately before testing the shortened host delay.
 repair. Already on the verified hotspot? Run it now without rewriting the SD card:**
 
 ```bash
-wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/main/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
+wget -4 -O /tmp/codynick-setup.sh "https://raw.githubusercontent.com/codynick/platform-rpi/advanced-ide/setup.sh?$(date +%s)" && sudo bash /tmp/codynick-setup.sh
 ```
 
 It chooses the required stage and shows the installation log. It accepts core

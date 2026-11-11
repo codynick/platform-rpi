@@ -13,10 +13,11 @@
   Change this path to the file your runner service executes:
 */
 $PYTHON_OUTPUT_FILE = '/home/client/active_script.py';
-$DATA_DIR           = __DIR__ . '/data';
+$ADVANCED           = defined('CODY_ADVANCED_IDE');
+$DATA_DIR           = __DIR__ . ($ADVANCED ? '/data/advanced' : '/data');
 $MAIN_JSON_FILE     = $DATA_DIR . '/main.json';
 $BLOCKS_DIR         = __DIR__ . '/blocks';
-$APP_TITLE          = 'CodyNick Block IDE';
+$APP_TITLE          = $ADVANCED ? 'Advanced IDE' : 'CodyNick Block IDE';
 $LOGO_TEXT          = 'CN';
 
 if (!is_dir($BLOCKS_DIR)) {
@@ -150,6 +151,9 @@ function load_block_packages(string $blocksDir): array {
 [$BLOCK_PACKAGES, $BLOCK_WARNINGS] = load_block_packages($BLOCKS_DIR);
 
 $api = $_GET['api'] ?? null;
+if ($ADVANCED && $api !== null && ($_SERVER['HTTP_SEC_FETCH_SITE'] ?? '') === 'cross-site') {
+    json_response(['ok'=>false,'error'=>'Local requests only.'],403);
+}
 
 if ($api === 'load') {
     if (is_file($MAIN_JSON_FILE)) {
@@ -195,6 +199,13 @@ if ($api === 'run') {
         json_response(['ok' => false, 'error' => 'POST required.'], 405);
     }
     $data = read_json_body();
+    if ($ADVANCED) {
+        require_once __DIR__.'/../advanced/status.php';
+        if (($data['replace'] ?? false) !== true &&
+            !in_array(advanced_script_status(), ['inactive', 'failed'], true)) {
+            json_response(['ok'=>false,'confirmReplace'=>true,'error'=>'A Pi program is running or its status is unknown.'],409);
+        }
+    }
 
     if (!isset($data['python']) || !is_string($data['python'])) {
         json_response(['ok' => false, 'error' => 'Missing generated Python code.'], 400);
@@ -623,37 +634,48 @@ if ($api === 'run') {
       }
     }
   </style>
-<link rel="icon" type="image/x-icon" href="/assets/favicon.ico"><link rel="stylesheet" href="/assets/tool-navigation.css"><link rel="stylesheet" href="/blocks/stage.css"><link rel="stylesheet" href="/blocks/spaces.css?v=0.14.0"></head>
-<body>
+<link rel="icon" type="image/x-icon" href="/assets/favicon.ico"><link rel="stylesheet" href="/assets/tool-navigation.css"><link rel="stylesheet" href="/blocks/stage.css"><link rel="stylesheet" href="/blocks/spaces.css?v=0.14.0">
+<?php if ($ADVANCED): ?><link rel="stylesheet" href="/code/ansi-terminal.css?v=0.3.0"><link rel="stylesheet" href="/advanced/editor.css?v=0.15.0"><?php endif; ?>
+</head>
+<body<?= $ADVANCED ? ' class="advanced-ide"' : '' ?>>
 <div class="app">
   <header class="topbar">
     <div class="brand">
       <div class="logo"><?= htmlspecialchars($LOGO_TEXT, ENT_QUOTES, 'UTF-8') ?></div>
       <div class="brand-title">
         <strong><?= htmlspecialchars($APP_TITLE, ENT_QUOTES, 'UTF-8') ?></strong>
-        <span>Scratch-like Blockly workspace · Python generator</span>
+        <span><?= $ADVANCED ? 'Blocks and native Python' : 'Scratch-like Blockly workspace · Python generator' ?></span>
       </div>
     </div>
 
     <nav class="toolbar">
       <button id="stageToggle" aria-expanded="true" title="Show or hide Simulation, Dashboard and Sprites">Hide Spaces</button>
       <a class="codynick-home-button" href="/">Main Panel</a>
+      <?php if ($ADVANCED): require __DIR__.'/../advanced/controls.php'; else: ?>
       <button onclick="newWorkspace()" title="Clear the workspace">New</button>
       <label class="file-button" for="importFile" title="Upload a CodyNick design">Upload</label>
       <input id="importFile" type="file" accept=".codynick" />
       <button onclick="downloadWorkspace()" title="Download the current CodyNick design">Download</button>
       <button onclick="NamedDesigns.save()" title="Save named design on this device">Save</button>
       <button onclick="NamedDesigns.open()" title="Load a design saved on this device">Load</button>
+      <?php endif; ?>
       <button id="blockExamplesButton" type="button">Examples</button>
       <button onclick="viewPython()" title="Preview generated Python in a pop-up">View Python</button>
-      <button id="blockRunBtn" class="run-btn" onclick="runProgram()" title="Generate Python and start script">▶ Run</button>
-      <button id="blockStopBtn" class="stop-btn" onclick="stopProgram()" title="Stop running script">&#9632; Stop</button>
+      <button id="blockRunBtn" class="run-btn" onclick="<?= $ADVANCED ? 'AdvancedIDE.run()' : 'runProgram()' ?>">▶ Run</button>
+      <button id="blockStopBtn" class="stop-btn" onclick="<?= $ADVANCED ? 'AdvancedIDE.stop()' : 'stopProgram()' ?>">&#9632; Stop</button>
     </nav>
   </header>
 
   <main class="main stage-layout">
     <section class="workspace-shell">
-      <div class="design-bar"><label for="designName">Design</label><input id="designName" type="text" maxlength="120" placeholder="Untitled" autocomplete="off"></div>
+      <div class="design-bar"><label for="designName">Design</label><input id="designName" type="text" maxlength="120" placeholder="Untitled" autocomplete="off">
+        <?php if ($ADVANCED): ?>
+        <nav class="advanced-tabs" role="tablist" aria-label="Editor">
+          <button id="advancedBlocksTab" role="tab" aria-selected="true" aria-controls="toolboxWorkspace">Blocks</button>
+          <button id="advancedPythonTab" role="tab" aria-selected="false" aria-controls="advancedPythonPanel">Python</button>
+        </nav>
+        <?php endif; ?>
+      </div>
       <div class="panel-head">
         <nav class="toolbox-modes" role="tablist" aria-label="Block categories" aria-orientation="horizontal">
           <button id="generalToolboxTab" role="tab" aria-selected="true" aria-controls="toolboxWorkspace" onclick="selectToolboxMode('general')">General</button>
@@ -664,7 +686,9 @@ if ($api === 'run') {
       </div>
       <div class="workspace-coding">
         <div id="toolboxWorkspace" role="tabpanel" aria-labelledby="generalToolboxTab"><div id="blocklyDiv"></div></div>
+        <?php if ($ADVANCED) require __DIR__.'/../advanced/editor.php'; ?>
       </div>
+      <?php if ($ADVANCED) require __DIR__.'/../advanced/console.php'; ?>
     </section>
 
     <aside id="liveSpaces" class="sprite-panel live-spaces" aria-label="Program spaces">
@@ -728,6 +752,11 @@ if ($api === 'run') {
 <script src="/blocks/spaces.js?v=0.14.0"></script>
 <script src="/blocks/stage.js?v=0.14.0"></script>
 <script src="/blocks/designs.js?v=0.12.0"></script>
+<?php if ($ADVANCED): ?>
+<script src="/code/ansi-terminal.js?v=0.3.0"></script>
+<script src="/advanced/projects.js?v=0.15.0"></script>
+<script src="/advanced/editor.js?v=0.15.0"></script>
+<?php endif; ?>
 <script>
 const BLOCK_PACKAGES = <?= json_encode($BLOCK_PACKAGES, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
 const BLOCK_WARNINGS = <?= json_encode($BLOCK_WARNINGS, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
@@ -1157,7 +1186,7 @@ function initBlockly() {
   });
 
   workspace.addChangeListener((event) => {
-    if (event.isUiEvent) return;
+    if (event.isUiEvent || (typeof AdvancedProjects !== 'undefined' && AdvancedProjects.busy())) return;
     updatePythonPreview(false);
     scheduleSave();
   });
@@ -1524,7 +1553,7 @@ async function downloadWorkspace() {
   toast('Workspace downloaded.');
 }
 
-document.getElementById('importFile').addEventListener('change', async (ev) => {
+document.getElementById('importFile')?.addEventListener('change', async (ev) => {
   const file = ev.target.files[0];
   ev.target.value = '';
   if (!file) return;
@@ -1611,6 +1640,7 @@ initBlockly();
 SpritePrototype.initialize();
 NamedDesigns.initialize();
 BlockSpaces.initialize();
+if (typeof AdvancedIDE !== 'undefined') AdvancedIDE.initialize();
 loadServerWorkspace();
 </script>
 </body>

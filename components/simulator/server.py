@@ -3,6 +3,7 @@ import argparse
 import hmac
 import json
 import math
+import re
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -135,10 +136,38 @@ class State:
             self.joystick_inputs = []
             self.notes = []
 
+    def restore_project(self, snapshot):
+        if self.session:
+            raise ValueError('Stop the simulator program before restoring a project.')
+        scene = self.validate_scene(snapshot['scene'])
+        leds = snapshot['leds']
+        if not isinstance(leds, list) or len(leds) != 16 or any(
+            not isinstance(color, str) or not re.fullmatch(r'#[0-9a-fA-F]{6}', color) for color in leds
+        ):
+            raise ValueError('Invalid saved LED state')
+        matrix = snapshot['matrix']
+        text, speed, mode, pixels = (matrix[key] for key in ('text', 'speed', 'mode', 'pixels'))
+        if (not isinstance(text, str) or not text.isascii() or len(text) > 49
+                or type(speed) is not int or speed not in (0, 1, 2)
+                or mode not in ('text', 'pixels') or not isinstance(pixels, list)
+                or len(pixels) != 64 or any(type(pixel) is not int or pixel not in (0, 1) for pixel in pixels)):
+            raise ValueError('Invalid saved matrix state')
+        displays = snapshot['seven_segment'], snapshot['ultra_segment']
+        if any(not isinstance(value, str) or not re.fullmatch(r'[0-9.\-]{0,5}', value) for value in displays):
+            raise ValueError('Invalid saved display state')
+        self.save_scene(scene)
+        self.leds = leds[:]
+        self.matrix.update(text=text, speed=speed, mode=mode, pixels=pixels[:], revision=self.matrix['revision'] + 1)
+        self.seven_segment, self.ultra_segment = displays
+        self.inputs, self.joystick_inputs, self.notes = [], [], []
+        return {'ok': True}
+
     def command(self, data):
         with self.lock:
             self.expire()
             action = data.get('action')
+            if action == 'restore_project':
+                return self.restore_project(data['snapshot'])
             if action in ('scene','scene_edit'):
                 if action=='scene_edit':
                     base=self.validate_scene(data['base']);edited=self.validate_scene(data['scene'])

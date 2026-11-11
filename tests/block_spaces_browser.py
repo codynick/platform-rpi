@@ -9,6 +9,7 @@ from pathlib import Path
 import shutil
 import socket
 import subprocess
+import sys
 import time
 import urllib.request
 from test_block_routing import BlockRoutingTests, ROOT, load
@@ -29,6 +30,8 @@ def main():
         proxy=base/'blocks/stage.php';proxy.write_text(proxy.read_text().replace('127.0.0.1:8092','127.0.0.1:'+str(fixture.servers[1].server_port)))
         home=fixture.directory/'client';(home/'userfiles').mkdir(parents=True)
         page=base/'blocks/index.php';page.write_text(page.read_text(encoding='utf-8').replace('/home/client',home.as_posix()),encoding='utf-8')
+        if '--advanced' in sys.argv:
+            configure_advanced_fixture(base, home, fixture)
         db=os.environ.get('MYSQL_TEST_DATABASE','dashboard_upgrade_test');assert db.endswith('_test') and db.replace('_','').isalnum()
         port=int(os.environ.get('MYSQL_TEST_PORT','3306'));user=os.environ.get('MYSQL_TEST_USER','dashboard_test');password=os.environ.get('MYSQL_TEST_PASSWORD','dashboard-test-local')
         dashboard=load('spaces_native_dashboard','components/client/Dashboard.py')
@@ -48,6 +51,10 @@ def main():
                 try:urllib.request.urlopen(origin+'/blocks/').close();break
                 except OSError:time.sleep(.1)
             else:raise RuntimeError('PHP fixture did not start')
+            if '--advanced' in sys.argv:
+                subprocess.run([os.environ.get('NODE_BIN','node'),str(ROOT/'tests/advanced_browser.cjs'),
+                                origin,str(fixture.directory)],check=True)
+                return
             result=fixture.directory/'browser-generated.json'
             subprocess.run([os.environ.get('NODE_BIN','node'),str(ROOT/'tests/block_spaces_browser.cjs'),origin,str(result)],check=True)
             sources=json.loads(result.read_text())
@@ -60,6 +67,34 @@ def main():
     finally:
         if php_process is not None:php_process.terminate();php_process.wait(timeout=10)
         fixture.doCleanups();BlockRoutingTests.tearDownClass()
+
+
+def configure_advanced_fixture(base, home, fixture):
+    device = base/'advanced/device.php'
+    device.write_text(device.read_text().replace('/opt/codynick-simulator/token', fixture.token_file.as_posix())
+                      .replace('127.0.0.1:8091', '127.0.0.1:'+str(fixture.servers[0].server_port)))
+    status = base/'advanced/status.php'
+    status.write_text('<?php function advanced_script_status(): string { return "active"; }')
+    code = base/'code/config.php'
+    code.write_text(code.read_text().replace('/home/client', home.as_posix()))
+    (home/'active_script.py').touch()
+    (home/'log.log').touch()
+    page = base/'blocks/index.php'
+    source = page.read_text(encoding='utf-8')
+    begin = source.index('    $control = @stream_socket_client')
+    end = source.index('\n}', begin)
+    # Run the actual submitted Python with the host interpreter. Simulate only
+    # the systemd/socket boundary, which a Windows fixture does not have.
+    command = json.dumps([Path(sys.executable).as_posix(), (home/'active_script.py').as_posix()])
+    output = json.dumps((home/'log.log').as_posix())
+    source = source[:begin] + f'''    if ($action === 'start') {{
+        $python = json_decode('{command}', true);
+        $p = proc_open($python, [0=>['pipe','r'], 1=>['file',{output},'a'], 2=>['file',{output},'a']], $pipes);
+        if (!is_resource($p)) throw new RuntimeException('Fixture could not run Python');
+        fclose($pipes[0]);
+        proc_close($p);
+    }}''' + source[end:]
+    page.write_text(source, encoding='utf-8')
 
 
 if __name__=='__main__':main()

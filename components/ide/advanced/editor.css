@@ -1,0 +1,59 @@
+.advanced-ide .workspace-shell {
+  grid-template-rows: auto auto minmax(0, 1fr) minmax(100px, 24%);
+}
+.advanced-ide .design-bar, .advanced-tabs, .advanced-console-bar, .advanced-python-tools {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.advanced-ide .design-bar input { min-width: 0; flex: 1; }
+.advanced-tabs button[aria-selected="true"] { background: #16664f; color: white; }
+.advanced-ide .workspace-coding { position: relative; }
+.advanced-menu { position: relative; }
+.advanced-menu summary { cursor: pointer; padding: .5rem .8rem; font-weight: 700; }
+.advanced-menu > div {
+  position: absolute;
+  z-index: 30;
+  min-width: 13rem;
+  padding: .4rem;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: .5rem;
+  box-shadow: 0 8px 24px #0f172a24;
+}
+.advanced-menu button { width: 100%; text-align: left; }
+#advancedPythonPanel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+}
+#advancedPythonPanel[hidden], .advanced-ide [hidden] { display: none !important; }
+.advanced-python-tools { padding: .45rem; border-bottom: 1px solid #dbe3e9; }
+#advancedPythonSource {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  resize: none;
+  border: 0;
+  background: #fcfdff;
+  color: #172b3a;
+  padding: 1rem;
+  font: .95rem/1.55 Consolas, monospace;
+  tab-size: 4;
+}
+.advanced-console {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  color: #e2e8f0;
+  background: #111827;
+}
+.advanced-console-bar { padding: .35rem .65rem; flex-wrap: wrap; }
+#advancedRunStatus { flex: 1; font-size: .85rem; }
+#advancedConsole { flex: 1; min-height: 0; margin: 0; padding: .5rem .65rem; overflow: auto; white-space: pre-wrap; }
+@media (max-width: 680px) {
+  .advanced-ide .design-bar { flex-wrap: wrap; }
+  .advanced-ide .workspace-shell { min-height: 430px; }
+}

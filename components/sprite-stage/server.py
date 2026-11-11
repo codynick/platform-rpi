@@ -33,8 +33,7 @@ class Stage:
         with self.lock:
             action = data.get('action')
             state = dict(self.state)
-            if action == 'configure' or action == 'begin':
-                self.speech_until = 0
+            if action in ('configure', 'begin', 'restore_project'):
                 state.update(x=self.number(data.get('x', 0), -240, 240),
                              y=self.number(data.get('y', 0), -180, 180),
                              direction=self.number(data.get('direction', 90), -36000, 36000) % 360,
@@ -44,6 +43,13 @@ class Stage:
                     raise ValueError('Invalid backdrop')
                 state['backdrop'] = backdrop
                 state['size'] = max(10, min(300, self.number(data.get('size', 100), -10000, 10000)))
+                if action == 'restore_project':
+                    if type(data.get('visible')) is not bool or not isinstance(data.get('speech'), str):
+                        raise ValueError('Invalid saved sprite state')
+                    state.update(visible=data['visible'], speech=data['speech'][:200])
+                    self.keys = []
+                    self.mouse = {'x': 0, 'y': 0, 'down': False}
+                self.speech_until = 0
             elif action == 'go':
                 state.update(x=self.number(data['x'], -240, 240), y=self.number(data['y'], -180, 180))
             elif action in ['set_x', 'set_y']:

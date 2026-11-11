@@ -47,7 +47,7 @@ class BlockRoutingTests(unittest.TestCase):
                  'serial.tools': tools, 'serial.tools.list_ports': ports, 'requests': types.ModuleType('requests')}):
                 cls.api = load('block_routing_api', 'components/client/CodyNick.py')
         cls.api.LOG_FILE = str(cls.directory/'native.log')
-        cls.token = 'block-spaces-test-token-' + 'a'*32
+        cls.token = 'a'*64
         cls.token_file = cls.directory/'token';cls.token_file.write_text(cls.token)
 
     @classmethod

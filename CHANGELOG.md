@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.0 Advanced IDE - 2026-11-11
+
+- Add a separate Advanced IDE with Blocks and native Python tabs, live spaces, and a shared program console.
+- Save, download and restore complete RPi project archives and open legacy Blockly exports.
+- Add branch-specific install and return-to-standard selectors.
+
 ## 0.14.1-second-demo-guide - 2026-11-10
 
 - Add the supplied Raspberry Pi 5 one-hour general demonstration as the second guide in the protected teacher/presenter panel. Preserve its text and the first guide unchanged; retain Markdown formatting and Copy buttons.

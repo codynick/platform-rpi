@@ -113,6 +113,21 @@ let camera={scale:1,x:0,y:0},panning=null,viewTouched=false;
 const viewport=$('stageViewport'),V=window.CodySimulatorViewport;
 function renderView(view){camera=view;stageZoom=view.scale;$('stage').style.transform=`translate(${view.x}px,${view.y}px) scale(${view.scale})`;$('zoomLevel').textContent=Math.round(view.scale*100)+'%';}
 window.CodySimulatorView={snapshot:()=>({camera:{...camera},selected}),restore:v=>{renderView({...v.camera});initialFit=true;viewTouched=true;select(v.selected);}};
+window.addEventListener('message', event => {
+  const editor = new URL(location.href);
+  editor.port = '';
+  if (event.source !== parent || event.origin !== editor.origin) return;
+  if (event.data?.type === 'codynick-advanced-view-request') {
+    parent.postMessage({type:'codynick-advanced-view', view:CodySimulatorView.snapshot()}, event.origin);
+  } else if (event.data?.type === 'codynick-advanced-view-restore') {
+    const view = event.data.view;
+    const {x,y,scale} = view?.camera || {};
+    if (Number.isFinite(scale) && scale >= .15 && scale <= 3 &&
+        [x,y].every(n => Number.isFinite(n) && Math.abs(n) <= 1e7) && Object.hasOwn(labels, view.selected)) {
+      CodyLiveStore.ready.then(() => CodySimulatorView.restore(view));
+    }
+  }
+});
 function fitStage(){if(!scene||viewport.clientWidth<=0||viewport.clientHeight<=0)return;let left=Infinity,top=Infinity,right=0,bottom=0;for(const [kind,pos]of Object.entries(scene.gadgets)){const item=$('gadget-'+kind);left=Math.min(left,pos.x);top=Math.min(top,pos.y);right=Math.max(right,pos.x+item.offsetWidth);bottom=Math.max(bottom,pos.y+item.offsetHeight);}renderView(V.fit({left,top,right,bottom},viewport.clientWidth,viewport.clientHeight));viewTouched=false;}
 viewport.addEventListener('wheel',event=>{if(event.target.closest('input,select,textarea')||panning||dragging)return;event.preventDefault();const r=viewport.getBoundingClientRect();renderView(V.zoomAt(camera,{x:event.clientX-r.left,y:event.clientY-r.top},event.deltaY));viewTouched=true;},{passive:false});
 viewport.addEventListener('pointerdown',event=>{if(event.button!==0||event.target.closest('.stage-item')||panning)return;event.preventDefault();viewport.focus({preventScroll:true});viewport.setPointerCapture(event.pointerId);panning={id:event.pointerId,x:event.clientX,y:event.clientY,camera:{...camera}};viewport.classList.add('panning');});

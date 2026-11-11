@@ -14,13 +14,14 @@ import tempfile
 import time
 import urllib.request
 
-VERSION = "0.14.1"
-TAG = "v0.14.1-second-demo-guide"
+VERSION = "0.15.0"
+TAG = "v0.15.0-advanced-ide"
 ENGINE_VERSION = VERSION
 ENGINE_TAG = TAG
-RELEASE_DATE = "2026-11-10"
+RELEASE_DATE = "2026-11-11"
 RELEASE_DIRECTORY = Path(__file__).resolve().parent
 TARGET_RELEASES = {
+    "0.15.0": ("v0.15.0-advanced-ide", "2026-11-11"),
     "0.14.1": ("v0.14.1-second-demo-guide", "2026-11-10"),
     "0.14.0": ("v0.14.0-simulator-assets", "2026-11-03"),
     "0.13.0": ("v0.13.0-block-spaces", "2026-11-03"),
@@ -46,6 +47,10 @@ SERVICES = ("ssh", "codynick-ap", "codynick-dhcp", "codynick-nat")
 PRESERVE = {"code/config.php", "dashboard/config.php", "docs/config.php", "blocks/data/main.json"}
 EXAMPLES_ROOT = Path("/home/client/userfiles/CodyNick examples")
 GADGET_TESTS_ROOT = Path("/home/client/CodyNick Gadget Tests")
+ADVANCED_WEB_FILES = (
+    "archive.php", "console.php", "controls.php", "device.php", "editor.css",
+    "editor.js", "editor.php", "index.php", "projects.js", "projects.php", "status.php",
+)
 
 
 def select_target(manifest):
@@ -224,6 +229,17 @@ def deploy(source, destination, backup, preserve=False):
     temporary.replace(destination)
 
 
+def remove_advanced_web_files(backup, root=Path("/var/www/html")):
+    """Remove the managed Advanced IDE UI while retaining drafts and projects."""
+    for name in ADVANCED_WEB_FILES:
+        path = safe_destination(root / "advanced" / name)
+        if path.is_file():
+            saved = backup / str(path).lstrip("/")
+            saved.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, saved)
+            path.unlink()
+
+
 def reset_examples(path, backup):
     """Replace the system-owned examples while retaining a recovery backup."""
     path = safe_destination(path)
@@ -248,7 +264,7 @@ def check_platform():
     for service in SERVICES:
         run("systemctl", "is-active", "--quiet", service)
     previous = read_json(STATE)
-    if previous and previous.get("version") not in ("0.2.0", "0.2.1", "0.2.2", "0.3.0", "0.3.1", "0.4.0", "0.5.0", "0.5.1", "0.5.2", "0.5.3", "0.6.0", "0.6.1", "0.7.0", "0.7.1", "0.7.2", "0.7.3", "0.7.4", "0.7.5", "0.7.6", "0.7.7", "0.7.8", "0.7.9", "0.7.10", "0.7.11", "0.8.1", "0.8.2", "0.9.0", "0.9.1", "0.9.2", "0.9.3", "0.9.4", "0.9.5", "0.9.6", "0.9.7", "0.9.8", "0.9.9", "0.9.10", "0.10.0", "0.10.1", "0.10.2", "0.11.1", "0.11.0", "0.10.3", "0.12.0", "0.12.1", "0.13.0", "0.14.0", ENGINE_VERSION, VERSION):
+    if previous and previous.get("version") not in ("0.2.0", "0.2.1", "0.2.2", "0.3.0", "0.3.1", "0.4.0", "0.5.0", "0.5.1", "0.5.2", "0.5.3", "0.6.0", "0.6.1", "0.7.0", "0.7.1", "0.7.2", "0.7.3", "0.7.4", "0.7.5", "0.7.6", "0.7.7", "0.7.8", "0.7.9", "0.7.10", "0.7.11", "0.8.1", "0.8.2", "0.9.0", "0.9.1", "0.9.2", "0.9.3", "0.9.4", "0.9.5", "0.9.6", "0.9.7", "0.9.8", "0.9.9", "0.9.10", "0.10.0", "0.10.1", "0.10.2", "0.11.1", "0.11.0", "0.10.3", "0.12.0", "0.12.1", "0.13.0", "0.14.0", "0.14.1", ENGINE_VERSION, VERSION):
         raise RuntimeError("This version cannot migrate that application release")
     if not previous and (Path("/root/codynick/service.py").exists() or Path("/home/client/CodyNick.py").exists()):
         raise RuntimeError("Existing legacy installation: migration must be reviewed before deployment")
@@ -632,7 +648,7 @@ def install():
         "mariadb-server", "python3-venv", "python3-pip", "python3-requests", "python3-serial", "curl", "net-tools", "acl",
         "v4l-utils", "libgomp1", "libglib2.0-0t64", "libgl1",
         "alsa-utils", "ffmpeg", "espeak-ng", "libsndfile1",
-        "tesseract-ocr", "tesseract-ocr-eng"))
+        "tesseract-ocr", "tesseract-ocr-eng") + (("php-zip",) if "advanced-ide" in manifest["components"] else ()))
     set_operation("Preparing CodyNick accounts and services")
     prepare_accounts()
     configure_database()
@@ -662,6 +678,8 @@ def install():
         if component in ("examples", "gadget-tests"):
             run("chown", "client:codynick-media", root, root / str(suffix))
             (root / str(suffix)).chmod(0o664)
+    if "advanced-ide" not in manifest["components"]:
+        remove_advanced_web_files(backup)
     for folder in (Path("/var/www/html/blocks/data"), Path("/var/www/html/blocks/blocks")):
         run("chown", "www-data:www-data", folder)
         folder.chmod(0o775)
