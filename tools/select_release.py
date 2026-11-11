@@ -8,6 +8,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 SUPPORTED = {
+    '0.14.1': 'v0.14.1-second-demo-guide',
     '0.14.0': 'v0.14.0-simulator-assets',
     '0.13.0': 'v0.13.0-block-spaces',
     '0.12.1': 'v0.12.1-dashboard-handles',

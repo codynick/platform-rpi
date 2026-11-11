@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.14.1-second-demo-guide - 2026-11-10
+
+- Add the supplied Raspberry Pi 5 one-hour general demonstration as the second guide in the protected teacher/presenter panel. Preserve its text and the first guide unchanged; retain Markdown formatting and Copy buttons.
+- Include the guide in the immutable core manifest and normal setup/update pins. Preserve previous manifests and targets.
+- Validate locally. Physical Pi, speech/AI timing and hardware rehearsal remain manual; no guide program is executed by this documentation release.
+
 ## 0.14.0-simulator-assets - 2026-11-03
 
 - Bring the server 3.20.4 simulator appearance, gadget/asset pickers, viewport and artwork to the RPi tool and embedded Simulation space.

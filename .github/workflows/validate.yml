@@ -44,3 +44,9 @@ jobs:
         run: |
           expected=$(sed -n 's/^HELPER_SHA256="\([a-f0-9]*\)"/\1/p' bootstrap/codynick-setup.sh)
           printf '%s  bootstrap/network_setup.py\n' "$expected" | sha256sum -c -
+
+      - name: Presenter panel browser regression
+        run: |
+          npm install --no-save playwright@1.57.0
+          npx playwright install --with-deps chromium
+          node tests/second_guide_browser.cjs

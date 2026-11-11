@@ -13,9 +13,9 @@ $device = [
     "serial_number" => "unknown",
     "device_code" => "unknown",
     "hotspot_ssid" => "unknown",
-    "production_date" => "2026-11-03",
-    "description" => "CodyNick 0.14.0",
-    "software_version" => "0.14.0",
+    "production_date" => "2026-11-10",
+    "description" => "CodyNick 0.14.1",
+    "software_version" => "0.14.1",
     "support_link" => "https://support.codynick.com",
     "logo_path" => "/assets/logo.png"
 ];
@@ -346,7 +346,7 @@ function e($value) {
 </div>
 
 <footer>
-    © <?php echo date("Y"); ?> CodyNick. All rights reserved.
+    Â© <?php echo date("Y"); ?> CodyNick. All rights reserved.
 </footer>
 
 </body>
