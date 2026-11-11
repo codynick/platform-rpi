@@ -202,7 +202,7 @@ const AdvancedProjects = (() => {
       if (!confirm('Start a new project and clear both editors and the three shared spaces?')) return;
       await apply({
         workspace:{blocks:{languageVersion:0, blocks:[]}}, python:'',
-        editor:{language:'blocks', space:'simulator', collapsed:false},
+        editor:{language:'python', space:'simulator', collapsed:false},
         live:{scene:{gadgets:{cjp:{x:40,y:40}},temperature:21.1}, leds:Array(16).fill('#000000'),
           matrix:{pixels:Array(64).fill(0),text:'',speed:1,mode:'pixels'}, seven_segment:'', ultra_segment:'',
           rpiCards:[]},

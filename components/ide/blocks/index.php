@@ -635,7 +635,7 @@ if ($api === 'run') {
     }
   </style>
 <link rel="icon" type="image/x-icon" href="/assets/favicon.ico"><link rel="stylesheet" href="/assets/tool-navigation.css"><link rel="stylesheet" href="/blocks/stage.css"><link rel="stylesheet" href="/blocks/spaces.css?v=0.14.0">
-<?php if ($ADVANCED): ?><link rel="stylesheet" href="/code/ansi-terminal.css?v=0.3.0"><link rel="stylesheet" href="/advanced/editor.css?v=0.15.0"><?php endif; ?>
+<?php if ($ADVANCED): ?><link rel="stylesheet" href="/code/ansi-terminal.css?v=0.3.0"><link rel="stylesheet" href="/advanced/editor.css?v=0.15.1"><?php endif; ?>
 </head>
 <body<?= $ADVANCED ? ' class="advanced-ide"' : '' ?>>
 <div class="app">
@@ -749,13 +749,14 @@ if ($api === 'run') {
   <div class="design-actions"><button type="button" onclick="document.getElementById('blockExamples').close()">Cancel</button><button id="blockExampleLoad" type="button">Load example</button></div>
 </dialog>
 <script src="/blocks/routing.js?v=0.14.0"></script>
-<script src="/blocks/spaces.js?v=0.14.0"></script>
+<script src="/blocks/spaces.js?v=0.15.1"></script>
 <script src="/blocks/stage.js?v=0.14.0"></script>
 <script src="/blocks/designs.js?v=0.12.0"></script>
 <?php if ($ADVANCED): ?>
 <script src="/code/ansi-terminal.js?v=0.3.0"></script>
-<script src="/advanced/projects.js?v=0.15.0"></script>
-<script src="/advanced/editor.js?v=0.15.0"></script>
+<script src="/advanced/python-color.js?v=0.15.1"></script>
+<script src="/advanced/projects.js?v=0.15.1"></script>
+<script src="/advanced/editor.js?v=0.15.1"></script>
 <?php endif; ?>
 <script>
 const BLOCK_PACKAGES = <?= json_encode($BLOCK_PACKAGES, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;

@@ -76,15 +76,24 @@ const BlockSpaces = (() => {
       if(!NamedDesigns.confirmReplace())return;
       if(!confirm('Load this example? Stop the current program first. '+item.description))return;
       try {
-        const response=await fetch('/blocks/examples/'+item.id+'.codynick?v=0.13.0');
-        if(!response.ok)throw Error('Example could not be loaded.');
+        const advanced = typeof AdvancedIDE !== 'undefined';
+        const [response, python] = await Promise.all([
+          fetch('/blocks/examples/'+item.id+'.codynick?v=0.13.0'),
+          advanced ? fetch('/advanced/examples/'+item.id+'.py?v=0.15.1') : null
+        ]);
+        if (!response.ok || (python && !python.ok)) throw Error('Example could not be loaded.');
         const data=await response.json(),previous=currentWorkspaceJson();
+        if (python) {
+          const source = await python.text();
+          data.codynick_advanced = {language:AdvancedIDE.state().language, source};
+        }
         try{Blockly.serialization.workspaces.load(data,workspace);}catch(error){Blockly.serialization.workspaces.load(previous,workspace);throw error;}
         document.getElementById('designName').value=item.title;
         show(item.space || 'simulation');
         await Blockly.renderManagement.finishQueuedRenders();
         await new Promise(requestAnimationFrame);
-        Blockly.svgResize(workspace);workspace.zoomToFit();workspace.setScale(Math.min(.72,workspace.scale));workspace.scrollCenter();
+        if (advanced) AdvancedIDE.fitBlocks();
+        else { Blockly.svgResize(workspace);workspace.zoomToFit();workspace.setScale(Math.min(.72,workspace.scale));workspace.scrollCenter(); }
         updatePythonPreview(true);await saveWorkspaceNow(true);
         dialog.close();toast('Example loaded. '+item.description);
       }catch(error){toast(error.message,true);}

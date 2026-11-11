@@ -2,7 +2,8 @@
 
 const AdvancedIDE = (() => {
   const get = id => document.getElementById(id);
-  let language = 'blocks';
+  let language = 'python';
+  let fitOnShow = false;
   let busy = false;
   let offset = -1;
   let fileId = '';
@@ -10,7 +11,7 @@ const AdvancedIDE = (() => {
   let terminal;
 
   function select(next, save = true) {
-    language = next === 'python' ? 'python' : 'blocks';
+    language = next === 'blocks' ? 'blocks' : 'python';
     const python = language === 'python';
     get('advancedBlocksTab').setAttribute('aria-selected', String(!python));
     get('advancedBlocksTab').tabIndex = python ? -1 : 0;
@@ -19,13 +20,36 @@ const AdvancedIDE = (() => {
     get('toolboxWorkspace').hidden = python;
     get('advancedPythonPanel').hidden = !python;
     document.querySelector('.advanced-ide .toolbox-modes').hidden = python;
-    if (!python) requestAnimationFrame(() => Blockly.svgResize(workspace));
+    if (!python) requestAnimationFrame(() => {
+      Blockly.svgResize(workspace);
+      if (fitOnShow) { fitOnShow = false; fitBlocks(); }
+    });
+    else requestAnimationFrame(syncColors);
     if (save) scheduleSave();
   }
 
   function state() { return {language, source:get('advancedPythonSource').value}; }
+  function syncColors() {
+    const source = get('advancedPythonSource'), colors = get('advancedPythonColors');
+    colors.scrollTop = source.scrollTop;
+    colors.scrollLeft = source.scrollLeft;
+  }
+  function highlight() {
+    const source = get('advancedPythonSource'), colors = get('advancedPythonColors');
+    const enabled = typeof window.CodyPythonColor === 'function' && source.value.length <= 100000;
+    colors.innerHTML = enabled ? window.CodyPythonColor(source.value) : '';
+    source.parentElement.classList.toggle('highlighted', enabled);
+    syncColors();
+  }
+  function fitBlocks() {
+    if (language === 'python') { fitOnShow = true; return; }
+    workspace.zoomToFit();
+    workspace.setScale(Math.min(.72, workspace.scale));
+    workspace.scrollCenter();
+  }
   function restore(data) {
     get('advancedPythonSource').value = typeof data?.source === 'string' ? data.source : '';
+    highlight();
     select(data?.language, false);
   }
 
@@ -109,22 +133,25 @@ const AdvancedIDE = (() => {
       priority:3, save:state, load:restore, clear:() => restore(null)
     });
     const source = get('advancedPythonSource');
-    source.addEventListener('input', scheduleSave);
+    source.addEventListener('input', () => { highlight(); scheduleSave(); });
+    source.addEventListener('scroll', syncColors);
     source.addEventListener('keydown', event => {
       if (event.key === 'Tab' && !event.shiftKey) {
         event.preventDefault();
         source.setRangeText('    ', source.selectionStart, source.selectionEnd, 'end');
+        highlight();
         scheduleSave();
       }
     });
     get('advancedGenerate').onclick = () => {
       if (source.value.trim() && !confirm('Replace this Python source with code generated from Blocks?')) return;
-      try { source.value = generatePython(); scheduleSave(); }
+      try { source.value = generatePython(); highlight(); scheduleSave(); }
       catch (error) { toast(error.message, true); }
     };
     terminal = new CodyNickAnsi.AnsiTerminal(get('advancedConsole'));
     get('advancedClearConsole').onclick = () => { generation++; terminal.reset(); };
     AdvancedProjects.initialize();
+    restore(null);
     async function update() {
       await poll();
       setTimeout(update, 1000);
@@ -132,6 +159,6 @@ const AdvancedIDE = (() => {
     update();
   }
 
-  return {initialize, state, restore, status, busy:() => busy,
+  return {initialize, state, restore, fitBlocks, status, busy:() => busy,
     run:() => control('run'), stop:() => control('stop')};
 })();

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.1 Advanced Python - 2026-11-11
+
+- Default to Python in new Advanced IDE projects and highlight code offline.
+- Load paired Blocks and readable Python examples without changing the active tab.
+- Force IPv4 in the installer worker and show verified core file counts.
+
 ## 0.15.0 Advanced IDE - 2026-11-11
 
 - Add a separate Advanced IDE with Blocks and native Python tabs, live spaces, and a shared program console.

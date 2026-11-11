@@ -133,6 +133,24 @@ class BlockRoutingTests(unittest.TestCase):
         self.assertEqual(self.stage.snapshot()['x'],5)
         self.assertEqual(self.hardware,[])
 
+    def test_handwritten_advanced_examples_run_natively(self):
+        examples = ROOT/'components/ide/advanced/examples'
+        for name in ('simulation-temperature', 'mixed-worlds', 'simulation-sprite'):
+            with self.subTest(name=name):
+                self.commands.clear()
+                self.hardware.clear()
+                if name == 'simulation-sprite':
+                    self.state.command({'action':'input','states':['RIGHT']})
+                self.execute(name, (examples / (name + '.py')).read_text())
+                self.assertIsNone(self.state.session)
+                if name == 'simulation-sprite':
+                    self.assertEqual(self.stage.snapshot()['x'], 5)
+                else:
+                    color = '#FF0000' if name == 'mixed-worlds' else '#00FF00'
+                    self.assertTrue(any(c.get('action') == 'led' and c['color'] == color for c in self.commands))
+                self.assertEqual(len(self.hardware), 1 if name == 'mixed-worlds' else 0)
+                self.assertTrue(all(h.closed for h in self.hardware))
+
     def test_legacy_and_general_programs_keep_their_connection_behavior(self):
         self.execute('legacy')
         self.assertEqual(len(self.hardware),1)

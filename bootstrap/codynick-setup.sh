@@ -2,7 +2,7 @@
 set -euo pipefail
 
 VERSION="0.2.2"
-REF="v0.15.0-advanced-ide"
+REF="v0.15.1-advanced-python"
 HELPER_SHA256="23d2da5e5176f8f1806f41886fffb7ff15bc6f717825483dccfa46f438401e37"
 BASE_URL="https://raw.githubusercontent.com/codynick/platform-rpi/$REF"
 

@@ -33,7 +33,7 @@ function advanced_project_encode(object $project, string $path): void {
     }
     try {
         $manifest = ['format'=>'codynick-project', 'version'=>1, 'platform'=>'rpi',
-            'applicationVersion'=>'0.15.0', 'createdAt'=>gmdate('c'), 'files'=>[]];
+            'applicationVersion'=>'0.15.1', 'createdAt'=>gmdate('c'), 'files'=>[]];
         $size = 0;
         foreach (ADVANCED_PROJECT_FILES as $name => $key) {
             $bytes = $key === 'python' ? $project->python : advanced_project_json($project->$key);
