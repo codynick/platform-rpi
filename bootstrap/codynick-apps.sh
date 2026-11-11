@@ -107,21 +107,21 @@ manifest = json.loads(pathlib.Path(sys.argv[1]).read_text())
 if manifest.get('version') != sys.argv[2] or manifest.get('tag') != sys.argv[3]:
     raise SystemExit('Incorrect release manifest')
 PY
-install -d -m 0755 /usr/local/lib/codynick/core-0.14.0
-install -m 0644 "$temp/app_setup.py" /usr/local/lib/codynick/core-0.14.0/app_setup.py
-install -m 0644 "$temp/core-manifest.json" /usr/local/lib/codynick/core-0.14.0/core-manifest.json
-install -m 0644 "$temp/version_status.py" /usr/local/lib/codynick/core-0.14.0/version_status.py
-install -m 0644 "$temp/vision_setup.py" /usr/local/lib/codynick/core-0.14.0/vision_setup.py
-install -m 0644 "$temp/speech_setup.py" /usr/local/lib/codynick/core-0.14.0/speech_setup.py
-install -m 0644 "$temp/ocr_setup.py" /usr/local/lib/codynick/core-0.14.0/ocr_setup.py
-install -m 0644 "$temp/tts_setup.py" /usr/local/lib/codynick/core-0.14.0/tts_setup.py
-install -m 0644 "$temp/llm_setup.py" /usr/local/lib/codynick/core-0.14.0/llm_setup.py
+install -d -m 0755 /usr/local/lib/codynick/core-0.15.0
+install -m 0644 "$temp/app_setup.py" /usr/local/lib/codynick/core-0.15.0/app_setup.py
+install -m 0644 "$temp/core-manifest.json" /usr/local/lib/codynick/core-0.15.0/core-manifest.json
+install -m 0644 "$temp/version_status.py" /usr/local/lib/codynick/core-0.15.0/version_status.py
+install -m 0644 "$temp/vision_setup.py" /usr/local/lib/codynick/core-0.15.0/vision_setup.py
+install -m 0644 "$temp/speech_setup.py" /usr/local/lib/codynick/core-0.15.0/speech_setup.py
+install -m 0644 "$temp/ocr_setup.py" /usr/local/lib/codynick/core-0.15.0/ocr_setup.py
+install -m 0644 "$temp/tts_setup.py" /usr/local/lib/codynick/core-0.15.0/tts_setup.py
+install -m 0644 "$temp/llm_setup.py" /usr/local/lib/codynick/core-0.15.0/llm_setup.py
 systemctl reset-failed codynick-install.service 2>/dev/null || true
 # A transient unit survives SSH disconnection, but intentionally does not survive reboot.
 flock -u 8
 systemd-run --unit=codynick-install --collect --property=Type=exec \
     --property=StandardOutput=append:${LOG} --property=StandardError=append:${LOG} \
-    /usr/bin/python3 -u /usr/local/lib/codynick/core-0.14.0/app_setup.py --worker
+    /usr/bin/python3 -u /usr/local/lib/codynick/core-0.15.0/app_setup.py --worker
 echo
 echo 'Installation is running in the background. Do not reboot until it finishes.'
 echo 'Follow progress: codynick-install-log --follow'

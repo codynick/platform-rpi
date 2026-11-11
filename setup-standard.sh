@@ -7,7 +7,7 @@ TARGET_VERSION="0.14.1"
 TARGET_TAG="v0.14.1-second-demo-guide"
 TARGET_MANIFEST_SHA256="bf72968bdc47766a34a473326944bd657aacce1d9ac43fa61c0a643e8bee5c85"
 NETWORK_SHA256="f6487c4fc27220298bf9a606cb17fd4f4ae4dbae7d5c2a1d41e67571994d60da"
-APPS_SHA256="4abc5b04e0df25977cfb4c60bf026213ceb92b860efec5399533dc09f8318b67"
+APPS_SHA256="b155433ba1be8f2faf3963b05e2c450e5f28d98361c0b910952a5083d70c088b"
 [[ $EUID -eq 0 ]] || { echo 'Run this setup command using sudo.'; exit 1; }
 echo "CodyNick setup ${TARGET_VERSION}: install / repair / upgrade / downgrade"
 exec 7>/run/lock/codynick-setup-entry.lock
