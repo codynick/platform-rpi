@@ -5,9 +5,9 @@ umask 022
 VERSION="0.15.0"
 TARGET_VERSION="0.15.0"
 TARGET_TAG="v0.15.0-advanced-ide"
-TARGET_MANIFEST_SHA256="19926a02b698518ac7ca68e992ced61b74ae97028a75d289984182ea32c618df"
+TARGET_MANIFEST_SHA256="68386f03ab6dda75a137a4266dc334357e7f4b3d679bc7fefac78982895d9c6b"
 NETWORK_SHA256="f6487c4fc27220298bf9a606cb17fd4f4ae4dbae7d5c2a1d41e67571994d60da"
-APPS_SHA256="d98f06d019e917eefb1f5106521dfd64767be248646ca0c3c4f92149e6eaa359"
+APPS_SHA256="4abc5b04e0df25977cfb4c60bf026213ceb92b860efec5399533dc09f8318b67"
 [[ $EUID -eq 0 ]] || { echo 'Run this setup command using sudo.'; exit 1; }
 echo "CodyNick setup ${TARGET_VERSION}: install / repair / upgrade / downgrade"
 exec 7>/run/lock/codynick-setup-entry.lock
